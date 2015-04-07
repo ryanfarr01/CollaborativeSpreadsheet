@@ -32,7 +32,7 @@
 //#include <signal.h> // Unnecessary?
 
 
-#define PORT "2000" // Port to host on
+#define PORT "2115" // Port to host on
 #define BACKLOG 10  // Max number of queued users waiting to connect
 #define INCOMING_BUFFER_SIZE 500 // Used in handle() to receive messages from sockets
 
@@ -71,7 +71,7 @@ void message_received(int socket_id, std::string & line_received)
     std::cout << "Line received: " << line_received << std::endl;
     
     // Echos the message back to the sender.
-    std::string my_string = "Echo::" + line_received + "\n";
+    std::string my_string = "Echo: " + line_received + "\n";
     send_message(socket_id, my_string);
 }
 
@@ -131,6 +131,9 @@ void handle(int newsock)
             
             // Remove the line we just found from received_so_far.
             received_so_far = received_so_far.substr(current_line.length(),received_so_far.length()-received_so_far.find('\n'));
+			
+			// Remove the newline character from the current_line
+			current_line = current_line.substr(0, current_line.length()-1);
 
             // call message_received() with the newly received line.
             message_received(newsock, current_line);
