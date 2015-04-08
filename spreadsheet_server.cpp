@@ -25,7 +25,9 @@
 #include <string.h> // memset(), strlen
 #include <arpa/inet.h> // inet_ntoa
 #include <sys/wait.h> // wait_for_child zombie reclamation requrement
+#include <vector>
 #include <netdb.h> // addrinfo/getaddrinfo
+#include <algorithm>
 //#include <sys/socket.h> // Unnecessary?
 //#include <netinet/in.h> // Unnecessary?
 //#include <unistd.h> // Unnecessary?
@@ -36,13 +38,13 @@
 #define BACKLOG 10  // Max number of queued users waiting to connect
 #define INCOMING_BUFFER_SIZE 500 // Used in handle() to receive messages from sockets
 
+void split_message(std::string message, std::vector<std::string> & ret);
 
 // Signal handler to reap zombie processes
 static void wait_for_child(int sig)
 {
     while (waitpid(-1, NULL, WNOHANG) > 0);
 } // end wait_for_child()
-
 
 // Used to send a string through a socket.
 int send_message(int socket_id, std::string & string_to_send)
@@ -69,10 +71,42 @@ void message_received(int socket_id, std::string & line_received)
     // THIS IS PLACEHOLDER CODE. TO BE REPLACED.
     // Prints the message to the server console
     std::cout << "Line received: " << line_received << std::endl;
+
+    std::vector<std::string> command;
+    split_message(line_received, command);
+    
+    std::cout << "In pieces:" << std::endl;
+    for(std::vector<std::string>::iterator it = command.begin(); it != command.end(); ++it)
+    {
+      std::cout << *it << std::endl;
+    }
     
     // Echos the message back to the sender.
     std::string my_string = "Echo: " + line_received + "\n";
     send_message(socket_id, my_string);
+}
+
+/*
+ * http://stackoverflow.com/questions/5888022/split-string-by-single-spaces
+ *
+ */
+void split_message(std::string message, std::vector<std::string> & ret)
+{
+  ret.clear();
+  int pos = message.find(' ');
+  int pos_init = 0;
+  int hit_space = 0;
+  message = message.substr(0, message.size()-1);
+
+  while(pos != std::string::npos)
+  {
+    hit_space = 1;
+    ret.push_back(message.substr(pos_init, pos - pos_init));
+    pos_init = pos + 1;
+    pos = message.find(' ', pos_init);
+  }
+  
+  ret.push_back(message.substr(pos_init, std::min(pos, static_cast<int>(message.size())) - pos_init));
 }
 
 // Called when a client disconnects.
