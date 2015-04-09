@@ -34,7 +34,6 @@
 //#include <signal.h> // Unnecessary?
 
 
-#define PORT "2115" // Port to host on
 #define BACKLOG 10  // Max number of queued users waiting to connect
 #define INCOMING_BUFFER_SIZE 500 // Used in handle() to receive messages from sockets
 
@@ -178,15 +177,30 @@ void handle(int newsock)
 
 // Main function.  Creates a server which pairs sockets to connecting clients, and 
 //   launches a callback handle in a forked thread for each.
-int main(void)
+int main(int argc, char* argv[])
 {
+	// Holds the port number we're going to host on.   Default to port 2000 as per protocol specification.
+	std::string port = "2000";
+
+	// If we have exactly one argument, make it our host port.
+    if (argc == 2){
+		port = argv[1]; //  Port value assigned here.
+		
+		// Error if we could not parse the argument as an int.
+		if( std::atoi(port.c_str()) == 0 ){
+			fprintf(stderr, "Invalid port specified\n");
+			return 1; // Terminate here
+		}
+    }
+	
     /* Get the address info */
     struct addrinfo hints, *res;
     memset(&hints, 0, sizeof hints); // Clear addrinfo struct
     hints.ai_family = AF_INET;       // Internet address family
     hints.ai_socktype = SOCK_STREAM; // TCP
+	hints.ai_flags = AI_PASSIVE; // Marked for bind()ing
     // Localhost, port, addrinfo struct, list of structs
-    if (getaddrinfo(NULL, PORT, &hints, &res) != 0) {
+    if (getaddrinfo(NULL, port.c_str(), &hints, &res) != 0) {
         perror("getaddrinfo"); // Error if getaddrinfo failed
         return 1;
     }
