@@ -1,0 +1,112 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using SpreadsheetUtilities;
+using System.Text.RegularExpressions;
+
+namespace SS
+{
+    public class SpreadSheet : AbstractSpreadsheet
+    {
+        Dictionary<string,Cell> filledCells;
+        DependencyGraph relationships;
+
+
+        public SpreadSheet()
+        {
+            filledCells = new Dictionary<string, Cell>();
+            relationships = new DependencyGraph();
+        }
+
+        public override IEnumerable<string> GetNamesOfAllNonemptyCells()
+        {
+            return filledCells.Keys;
+        }
+
+        public override object GetCellContents(string name)
+        {
+            if (name == null)
+                throw new InvalidNameException();
+            if (filledCells.ContainsKey(name))
+                return filledCells[name].contents;
+            else return "";
+        }
+
+        public override ISet<string> SetCellContents(string name, double number)
+        {
+            if(!validCellName(name))
+                throw new InvalidNameException();
+            filledCells[name] = new Cell(number);
+            relationships.ReplaceDependees(name, new List<string>());
+            return new HashSet<string>(GetCellsToRecalculate(name));
+        }
+
+        public override ISet<string> SetCellContents(string name, string text)
+        {
+            if (text == null)
+                throw new ArgumentNullException();
+            if (!validCellName(name))
+                throw new InvalidNameException();
+
+            if (text != "")
+                filledCells[name] = new Cell(text);
+            else
+                filledCells.Remove(name);
+            relationships.ReplaceDependees(name, new List<string>());
+            return new HashSet<string>(GetCellsToRecalculate(name));
+        }
+
+        public override ISet<string> SetCellContents(string name, SpreadsheetUtilities.Formula formula)
+        {
+            if (formula == null)
+                throw new ArgumentNullException();
+
+            if (!validCellName(name))
+                throw new InvalidNameException();
+
+            List<string> temp = new List<string>(relationships.GetDependents(name));
+
+            relationships.ReplaceDependees(name, formula.GetVariables());
+
+            try
+            {
+                HashSet<string> recalculate = new HashSet<string>(GetCellsToRecalculate(name));
+            }
+            catch(CircularException e)
+            {
+                relationships.ReplaceDependees(name, temp);
+                throw new CircularException();
+            }
+
+            filledCells[name] = new Cell(formula);
+
+            return new HashSet<string>(GetCellsToRecalculate(name));
+        }
+
+        protected override IEnumerable<string> GetDirectDependents(string name)
+        {
+            return relationships.GetDependents(name);
+        }
+
+        private Boolean validCellName(string name)
+        {
+            
+            if (name == null)
+                return false;
+            Regex nameChecker = new Regex("^[a-zA-Z_][0-9a-zA-Z_]*",0);
+            return nameChecker.IsMatch(name); 
+        }
+    }
+
+    public class Cell
+    {
+        public Object contents { get; set; }
+
+        public Cell(Object _contents)
+        {
+            contents = _contents;
+        }
+    }
+}

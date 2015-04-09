@@ -1,0 +1,178 @@
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SS;
+using SpreadsheetUtilities;
+
+namespace SpreadsheetTests
+{
+    [TestClass]
+    public class UnitTest1
+    {
+        [TestMethod]
+        public void Constructor()
+        {
+            SpreadSheet spreadsheet = new SpreadSheet();
+            List<string> list = new List<string>(spreadsheet.GetNamesOfAllNonemptyCells());
+            Assert.AreEqual(0, list.Count); // the spreadsheet has only empty cells
+
+        }
+
+        // Test than an InvalidNameException is thrown when a null name is used and 
+        // an invalid name is used when setting the contents of a cell for each of
+        // the cell setting methods
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void SetCellContentsNameNull1()
+        {
+            SpreadSheet spreadsheet = new SpreadSheet();
+            spreadsheet.SetCellContents(null, 1);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void SetCellContentsNameInvalid1()
+        {
+            SpreadSheet spreadsheet = new SpreadSheet();
+            spreadsheet.SetCellContents("1a", 1);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void SetCellContentsNameNull2()
+        {
+            SpreadSheet spreadsheet = new SpreadSheet();
+            spreadsheet.SetCellContents(null, "a");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void SetCellContentsNameInvalid2()
+        {
+            SpreadSheet spreadsheet = new SpreadSheet();
+            spreadsheet.SetCellContents("1a", "a");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void SetCellContentsNameNull3()
+        {
+            SpreadSheet spreadsheet = new SpreadSheet();
+            spreadsheet.SetCellContents(null, new Formula("1+1"));
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void SetCellContentsNameInvalid3()
+        {
+            SpreadSheet spreadsheet = new SpreadSheet();
+            spreadsheet.SetCellContents("1a", new Formula("1+1"));
+        }
+
+        // Test set contents to double
+        [TestMethod]
+        public void SetCellNumber()
+        {
+            SpreadSheet spreadsheet = new SpreadSheet();
+            spreadsheet.SetCellContents("A1", 1);
+            spreadsheet.SetCellContents("B1", 0);
+            spreadsheet.SetCellContents("C2", -10);
+
+            List<string> list = new List<string>(spreadsheet.GetNamesOfAllNonemptyCells());
+            Assert.AreEqual(3, list.Count);
+            Assert.IsTrue(list.Contains("A1"));
+            Assert.IsTrue(list.Contains("B1"));
+            Assert.IsTrue(list.Contains("C2"));
+
+            Assert.AreEqual(1, (double)spreadsheet.GetCellContents("A1"));
+        }
+
+        // Test set contents to string
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void SetCellString()
+        {
+            SpreadSheet spreadsheet = new SpreadSheet();
+            spreadsheet.SetCellContents("A1", "Test 1");
+            spreadsheet.SetCellContents("B1", "Test 2");
+            spreadsheet.SetCellContents("C2", "Test 3");
+
+            List<string> list = new List<string>(spreadsheet.GetNamesOfAllNonemptyCells());
+            Assert.AreEqual(3, list.Count);
+            Assert.IsTrue(list.Contains("A1"));
+            Assert.IsTrue(list.Contains("B1"));
+            Assert.IsTrue(list.Contains("C2"));
+
+            Assert.AreEqual("Test 1", (string)spreadsheet.GetCellContents("A1"));
+            Assert.AreEqual("Test 2", (string)spreadsheet.GetCellContents("B1"));
+            Assert.AreEqual("Test 3", (string)spreadsheet.GetCellContents("C2"));
+
+            spreadsheet.SetCellContents("A1", "");
+
+            list = new List<string>(spreadsheet.GetNamesOfAllNonemptyCells());
+            Assert.AreEqual(2, list.Count);
+
+            string nullString = null;
+
+            spreadsheet.SetCellContents("AAA53", nullString);
+        }
+
+        // Test set contents to formula
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void SetCellFormula()
+        {
+            SpreadSheet spreadsheet = new SpreadSheet();
+            spreadsheet.SetCellContents("A1", new Formula("1+1"));
+            spreadsheet.SetCellContents("B1", new Formula("A1+1"));
+            spreadsheet.SetCellContents("C2", new Formula("A1+B1"));
+
+            List<string> list = new List<string>(spreadsheet.GetNamesOfAllNonemptyCells());
+            Assert.AreEqual(3, list.Count);
+            Assert.IsTrue(list.Contains("A1"));
+            Assert.IsTrue(list.Contains("B1"));
+            Assert.IsTrue(list.Contains("C2"));
+
+            Assert.AreEqual(new Formula("1+1"), (Formula)spreadsheet.GetCellContents("A1"));
+            Assert.AreEqual(new Formula("A1+1"), (Formula)spreadsheet.GetCellContents("B1"));
+            Assert.AreEqual(new Formula("A1+B1"), (Formula)spreadsheet.GetCellContents("C2"));
+
+
+            list = new List<string>(spreadsheet.SetCellContents("B1", new Formula("10")));
+            Assert.AreEqual(2, list.Count);
+            Assert.IsTrue(list.Contains("C2"));
+            Assert.IsTrue(list.Contains("B1"));
+
+
+            Formula nullFormula = null;
+
+            spreadsheet.SetCellContents("AAA53", nullFormula);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(CircularException))]
+        public void SetCellFormula2()
+        {
+            SpreadSheet spreadsheet = new SpreadSheet();
+            spreadsheet.SetCellContents("A1", new Formula("B1"));
+            spreadsheet.SetCellContents("B1", new Formula("C2"));
+            spreadsheet.SetCellContents("C2", new Formula("A1"));
+        }
+
+        // Test get cell contents - this method has largely been tested above. These tests will ensure the error 
+        // handling is done corrctly and test getting an empty cell contents
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void GetCellContents()
+        {
+            SpreadSheet spreadsheet = new SpreadSheet();
+            Assert.AreEqual("", spreadsheet.GetCellContents("A1"));
+            spreadsheet.GetCellContents(null);
+        }
+
+        [TestMethod]
+        public void TestMethod1()
+        {
+        }
+    }
+}

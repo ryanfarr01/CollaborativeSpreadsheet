@@ -1,0 +1,113 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using SS;
+
+namespace SpreadsheetGUI
+{
+    public partial class Form1 : Form
+    {
+        spreadsheet baseSpreadsheet;
+        public Form1()
+        {
+            InitializeComponent();
+            baseSpreadsheet = new spreadsheet();
+
+            spreadsheetPanel1.SelectionChanged += displaySelection;
+            spreadsheetPanel1.SetSelection(0, 0);
+        }
+
+        // Every time the selection changes, this method is called with the
+        // Spreadsheet as its parameter.  We display the current time in the cell.
+
+        private void displaySelection(SpreadsheetPanel ss)
+        {
+            /*
+            int row, col;
+            String value;
+            String cell;
+            ss.GetSelection(out col, out row);
+            ss.GetValue(col, row, out value);
+            col+=65;
+            cell = "" + (char)(col) + row;
+            MessageBox.Show(cell);
+            ss.SetValue(col, row, "Value");
+            ss.GetValue(col, row, out value);
+            */
+
+            int row, col;
+            String value;
+            String cell;
+            ss.GetSelection(out col, out row);
+            ss.GetValue(col, row, out value);
+            cell = "" + (char)(col+65) + row;
+            if (value == "")
+            {
+                ss.SetValue(col, row, cell);
+                ss.GetValue(col, row, out value);
+            }
+            cellNameField.Text = cell;
+        }
+
+        private void spreadsheetPanel1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void closeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        private void newToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Tell the application context to run the form on the same
+            // thread as the other forms.
+            SpreadsheetApplicationContext.getAppContext().RunForm(new Form1());
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void cellContentsField_Enter(object sender, EventArgs e)
+        {
+            int row, col;
+            String cell;
+            spreadsheetPanel1.GetSelection(out col, out row);
+            cell = "" + (char)(col + 65) + row;
+            updateCellValues(baseSpreadsheet.SetContentsOfCell(cell,cellContentsField.Text));
+        }
+
+        private void updateCellValues(ISet<string> set)
+        {
+            int row, col;
+            string value;
+            foreach (string cell in set)
+            {
+                col = getCol(cell);
+                row = getRow(cell);
+                value = baseSpreadsheet.GetCellValue(cell).ToString();
+                spreadsheetPanel1.SetValue(col, row, value);
+            }
+        }
+
+        private int getCol(string cell)
+        {
+            return (int)cell[0] - 65;
+        }
+
+        private int getRow(string cell)
+        {
+            return Int32.Parse(cell.Substring(1, cell.Length - 1));
+        }
+
+    }
+}

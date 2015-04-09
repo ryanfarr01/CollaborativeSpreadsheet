@@ -1,0 +1,455 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Spreadsheet</name>
+    </assembly>
+    <members>
+        <member name="T:SS.CircularException">
+            <summary>
+            Thrown to indicate that a change to a cell will cause a circular dependency.
+            </summary>
+        </member>
+        <member name="T:SS.InvalidNameException">
+            <summary>
+            Thrown to indicate that a name parameter was either null or invalid.
+            </summary>
+        </member>
+        <member name="T:SS.SpreadsheetReadWriteException">
+            <summary>
+            Thrown to indicate that a read or write attempt has failed.
+            </summary>
+        </member>
+        <member name="M:SS.SpreadsheetReadWriteException.#ctor(System.String)">
+            <summary>
+            Creates the exception with a message
+            </summary>
+        </member>
+        <member name="T:SS.AbstractSpreadsheet">
+            <summary>
+            An AbstractSpreadsheet object represents the state of a simple spreadsheet.  A 
+            spreadsheet consists of an infinite number of named cells.
+            
+            A string is a cell name if and only if it consists of one or more letters,
+            followed by one or more digits AND it satisfies the predicate IsValid.
+            For example, "A15", "a15", "XY032", and "BC7" are cell names so long as they
+            satisfy IsValid.  On the other hand, "Z", "X_", and "hello" are not cell names,
+            regardless of IsValid.
+            
+            Any valid incoming cell name, whether passed as a parameter or embedded in a formula,
+            must be normalized with the Normalize method before it is used by or saved in 
+            this spreadsheet.  For example, if Normalize is s => s.ToUpper(), then
+            the Formula "x3+a5" should be converted to "X3+A5" before use.
+            
+            A spreadsheet contains a cell corresponding to every possible cell name.  
+            In addition to a name, each cell has a contents and a value.  The distinction is
+            important.
+            
+            The contents of a cell can be (1) a string, (2) a double, or (3) a Formula.  If the
+            contents is an empty string, we say that the cell is empty.  (By analogy, the contents
+            of a cell in Excel is what is displayed on the editing line when the cell is selected.)
+            
+            In a new spreadsheet, the contents of every cell is the empty string.
+             
+            The value of a cell can be (1) a string, (2) a double, or (3) a FormulaError.  
+            (By analogy, the value of an Excel cell is what is displayed in that cell's position
+            in the grid.)
+            
+            If a cell's contents is a string, its value is that string.
+            
+            If a cell's contents is a double, its value is that double.
+            
+            If a cell's contents is a Formula, its value is either a double or a FormulaError,
+            as reported by the Evaluate method of the Formula class.  The value of a Formula,
+            of course, can depend on the values of variables.  The value of a variable is the 
+            value of the spreadsheet cell it names (if that cell's value is a double) or 
+            is undefined (otherwise).
+            
+            Spreadsheets are never allowed to contain a combination of Formulas that establish
+            a circular dependency.  A circular dependency exists when a cell depends on itself.
+            For example, suppose that A1 contains B1*2, B1 contains C1*2, and C1 contains A1*2.
+            A1 depends on B1, which depends on C1, which depends on A1.  That's a circular
+            dependency.
+            </summary>
+        </member>
+        <member name="M:SS.AbstractSpreadsheet.#ctor(System.Func{System.String,System.Boolean},System.Func{System.String,System.String},System.String)">
+            <summary>
+            Constructs an abstract spreadsheet by recording its variable validity test,
+            its normalization method, and its version information.  The variable validity
+            test is used throughout to determine whether a string that consists of one or
+            more letters followed by one or more digits is a valid cell name.  The variable
+            equality test should be used thoughout to determine whether two variables are
+            equal.
+            </summary>
+        </member>
+        <member name="M:SS.AbstractSpreadsheet.GetSavedVersion(System.String)">
+            <summary>
+            Returns the version information of the spreadsheet saved in the named file.
+            If there are any problems opening, reading, or closing the file, the method
+            should throw a SpreadsheetReadWriteException with an explanatory message.
+            </summary>
+        </member>
+        <member name="M:SS.AbstractSpreadsheet.Save(System.String)">
+            <summary>
+            Writes the contents of this spreadsheet to the named file using an XML format.
+            The XML elements should be structured as follows:
+            
+            <spreadsheet version="version information goes here">
+            
+            <cell>
+            <name>
+            cell name goes here
+            </name>
+            <contents>
+            cell contents goes here
+            </contents>    
+            </cell>
+            
+            </spreadsheet>
+            
+            There should be one cell element for each non-empty cell in the spreadsheet.  
+            If the cell contains a string, it should be written as the contents.  
+            If the cell contains a double d, d.ToString() should be written as the contents.  
+            If the cell contains a Formula f, f.ToString() with "=" prepended should be written as the contents.
+            
+            If there are any problems opening, writing, or closing the file, the method should throw a
+            SpreadsheetReadWriteException with an explanatory message.
+            </summary>
+        </member>
+        <member name="M:SS.AbstractSpreadsheet.GetCellValue(System.String)">
+            <summary>
+            If name is null or invalid, throws an InvalidNameException.
+            
+            Otherwise, returns the value (as opposed to the contents) of the named cell.  The return
+            value should be either a string, a double, or a SpreadsheetUtilities.FormulaError.
+            </summary>
+        </member>
+        <member name="M:SS.AbstractSpreadsheet.GetNamesOfAllNonemptyCells">
+            <summary>
+            Enumerates the names of all the non-empty cells in the spreadsheet.
+            </summary>
+        </member>
+        <member name="M:SS.AbstractSpreadsheet.GetCellContents(System.String)">
+            <summary>
+            If name is null or invalid, throws an InvalidNameException.
+            
+            Otherwise, returns the contents (as opposed to the value) of the named cell.  The return
+            value should be either a string, a double, or a Formula.
+            </summary>
+        </member>
+        <member name="M:SS.AbstractSpreadsheet.SetContentsOfCell(System.String,System.String)">
+            <summary>
+            If content is null, throws an ArgumentNullException.
+            
+            Otherwise, if name is null or invalid, throws an InvalidNameException.
+            
+            Otherwise, if content parses as a double, the contents of the named
+            cell becomes that double.
+            
+            Otherwise, if content begins with the character '=', an attempt is made
+            to parse the remainder of content into a Formula f using the Formula
+            constructor.  There are then three possibilities:
+            
+              (1) If the remainder of content cannot be parsed into a Formula, a 
+                  SpreadsheetUtilities.FormulaFormatException is thrown.
+                  
+              (2) Otherwise, if changing the contents of the named cell to be f
+                  would cause a circular dependency, a CircularException is thrown.
+                  
+              (3) Otherwise, the contents of the named cell becomes f.
+            
+            Otherwise, the contents of the named cell becomes content.
+            
+            If an exception is not thrown, the method returns a set consisting of
+            name plus the names of all other cells whose value depends, directly
+            or indirectly, on the named cell.
+            
+            For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
+            set {A1, B1, C1} is returned.
+            </summary>
+        </member>
+        <member name="M:SS.AbstractSpreadsheet.SetCellContents(System.String,System.Double)">
+            <summary>
+            If name is null or invalid, throws an InvalidNameException.
+            
+            Otherwise, the contents of the named cell becomes number.  The method returns a
+            set consisting of name plus the names of all other cells whose value depends, 
+            directly or indirectly, on the named cell.
+            
+            For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
+            set {A1, B1, C1} is returned.
+            </summary>
+        </member>
+        <member name="M:SS.AbstractSpreadsheet.SetCellContents(System.String,System.String)">
+            <summary>
+            If text is null, throws an ArgumentNullException.
+            
+            Otherwise, if name is null or invalid, throws an InvalidNameException.
+            
+            Otherwise, the contents of the named cell becomes text.  The method returns a
+            set consisting of name plus the names of all other cells whose value depends, 
+            directly or indirectly, on the named cell.
+            
+            For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
+            set {A1, B1, C1} is returned.
+            </summary>
+        </member>
+        <member name="M:SS.AbstractSpreadsheet.SetCellContents(System.String,SpreadsheetUtilities.Formula)">
+            <summary>
+            If formula parameter is null, throws an ArgumentNullException.
+            
+            Otherwise, if name is null or invalid, throws an InvalidNameException.
+            
+            Otherwise, if changing the contents of the named cell to be the formula would cause a 
+            circular dependency, throws a CircularException.
+            
+            Otherwise, the contents of the named cell becomes formula.  The method returns a
+            Set consisting of name plus the names of all other cells whose value depends,
+            directly or indirectly, on the named cell.
+            
+            For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
+            set {A1, B1, C1} is returned.
+            </summary>
+        </member>
+        <member name="M:SS.AbstractSpreadsheet.GetDirectDependents(System.String)">
+            <summary>
+            If name is null, throws an ArgumentNullException.
+            
+            Otherwise, if name isn't a valid cell name, throws an InvalidNameException.
+            
+            Otherwise, returns an enumeration, without duplicates, of the names of all cells whose
+            values depend directly on the value of the named cell.  In other words, returns
+            an enumeration, without duplicates, of the names of all cells that contain
+            formulas containing name.
+            
+            For example, suppose that
+            A1 contains 3
+            B1 contains the formula A1 * A1
+            C1 contains the formula B1 + A1
+            D1 contains the formula B1 - C1
+            The direct dependents of A1 are B1 and C1
+            </summary>
+        </member>
+        <member name="M:SS.AbstractSpreadsheet.GetCellsToRecalculate(System.Collections.Generic.ISet{System.String})">
+            <summary>
+            Requires that names be non-null.  Also requires that if names contains s,
+            then s must be a valid non-null cell name.
+            
+            If any of the named cells are involved in a circular dependency,
+            throws a CircularException.
+            
+            Otherwise, returns an enumeration of the names of all cells whose values must
+            be recalculated, assuming that the contents of each cell named in names has changed.
+            The names are enumerated in the order in which the calculations should be done.  
+            
+            For example, suppose that 
+            A1 contains 5
+            B1 contains 7
+            C1 contains the formula A1 + B1
+            D1 contains the formula A1 * C1
+            E1 contains 15
+            
+            If A1 and B1 have changed, then A1, B1, and C1, and D1 must be recalculated,
+            and they must be recalculated in either the order A1,B1,C1,D1 or B1,A1,C1,D1.
+            The method will produce one of those enumerations.
+            
+            Please note that this method depends on the abstract GetDirectDependents.
+            It won't work until GetDirectDependents is implemented correctly.
+            </summary>
+        </member>
+        <member name="M:SS.AbstractSpreadsheet.GetCellsToRecalculate(System.String)">
+            <summary>
+            A convenience method for invoking the other version of GetCellsToRecalculate
+            with a singleton set of names.  See the other version for details.
+            </summary>
+        </member>
+        <member name="M:SS.AbstractSpreadsheet.Visit(System.String,System.String,System.Collections.Generic.ISet{System.String},System.Collections.Generic.LinkedList{System.String})">
+            <summary>
+            A helper for the GetCellsToRecalculate method.
+            </summary>
+        </member>
+        <member name="P:SS.AbstractSpreadsheet.Changed">
+            <summary>
+            True if this spreadsheet has been modified since it was created or saved                  
+            (whichever happened most recently); false otherwise.
+            </summary>
+        </member>
+        <member name="P:SS.AbstractSpreadsheet.IsValid">
+            <summary>
+            Method used to determine whether a string that consists of one or more letters
+            followed by one or more digits is a valid variable name.
+            </summary>
+        </member>
+        <member name="P:SS.AbstractSpreadsheet.Normalize">
+            <summary>
+            Method used to convert a cell name to its standard form.  For example,
+            Normalize might convert names to upper case.
+            </summary>
+        </member>
+        <member name="P:SS.AbstractSpreadsheet.Version">
+            <summary>
+            Version information
+            </summary>
+        </member>
+        <member name="T:SS.spreadsheet">
+            <summary>
+            Spreadsheet that implements the AbstractSpreadsheet specification.
+            </summary>
+        </member>
+        <member name="F:SS.spreadsheet.filledCells">
+            <summary>
+            Data structure that does two jobs: Keeps track of each cell name that is not empty and stores the associated cells for later use.
+            </summary>
+        </member>
+        <member name="F:SS.spreadsheet.relationships">
+            <summary>
+            A graph that keeps track of the relationships between cells.
+            </summary>
+        </member>
+        <member name="M:SS.spreadsheet.#ctor">
+            <summary>
+            Class for the underlying storage and manipulation of data for a spreadsheet application.
+            </summary>
+        </member>
+        <member name="M:SS.spreadsheet.#ctor(System.Func{System.String,System.Boolean},System.Func{System.String,System.String},System.String)">
+            <summary>
+            Class for the underlying storage and manipulation of data for a spreadsheet application.
+            </summary>
+            <param name="isValid">Function for validating cell names.</param>
+            <param name="normalize">Function for normalizing cell names.</param>
+            <param name="version">Version Info</param>
+        </member>
+        <member name="M:SS.spreadsheet.#ctor(System.String,System.Func{System.String,System.Boolean},System.Func{System.String,System.String},System.String)">
+            <summary>
+            Loads a saved spreadsheet
+            </summary>
+            <param name="filename">The saved spreadsheet to load</param>
+            <param name="isValid">Function for validating cell names.</param>
+            <param name="normalize">Function for normalizing cell names.</param>
+            <param name="version">Version Info</param>
+        </member>
+        <member name="M:SS.spreadsheet.GetNamesOfAllNonemptyCells">
+            <summary>
+            Returns a list of cells that are not empty.
+            </summary>
+            <returns>Returns a list of all cells that are not empty</returns>
+        </member>
+        <member name="M:SS.spreadsheet.GetCellContents(System.String)">
+            <summary>
+            Returns the contents of the named cell. If the cell is empty returns an empty string: "". Throws an
+            exception null is provided instead of a string. 
+            </summary>
+            <param name="name">Name of the cell to get the contents of.</param>
+            <returns>The contents of the named cell.</returns>
+        </member>
+        <member name="M:SS.spreadsheet.SetCellContents(System.String,System.Double)">
+            <summary>
+            Sets the named cell to have the specified contents.
+            </summary>
+            <param name="name">The cell name to set contents of.</param>
+            <param name="number">The contents of the cell.</param>
+            <returns>Returns and cells that need to be recalucated based on this change.</returns>
+        </member>
+        <member name="M:SS.spreadsheet.SetCellContents(System.String,System.String)">
+            <summary>
+            Sets the named cell to have the specified contents.
+            </summary>
+            <param name="name">The cell name to set contents of.</param>
+            <param name="text">The contents of the cell.</param>
+            <returns>Returns and cells that need to be recalucated based on this change.</returns>
+        </member>
+        <member name="M:SS.spreadsheet.SetCellContents(System.String,SpreadsheetUtilities.Formula)">
+            <summary>
+            Sets the named cell to have the specified contents.
+            </summary>
+            <param name="name">The cell name to set contents of.</param>
+            <param name="formula">The contents of the cell.</param>
+            <returns>Returns and cells that need to be recalucated based on this change.</returns>
+        </member>
+        <member name="M:SS.spreadsheet.GetDirectDependents(System.String)">
+            <summary>
+            Returns all the cells that are direct dependents of the named cell.
+            </summary>
+            <param name="name">The cell to find the direct dependents of.</param>
+            <returns>The cells that are direct dependents of the named cell.</returns>
+        </member>
+        <member name="M:SS.spreadsheet.validCellName(System.String)">
+            <summary>
+            Determines if the string provided is a valid cell name.
+            </summary>
+            <param name="name">The cell name to check.</param>
+            <returns>Returns true if it is a valid cell name, false if not.</returns>
+        </member>
+        <member name="M:SS.spreadsheet.GetSavedVersion(System.String)">
+            <summary>
+            Reports the version of the saved spreadsheet.
+            </summary>
+            <param name="filename">The file name of the saved spreadsheet.</param>
+            <returns>Returns the version of the saved spreadsheet</returns>
+        </member>
+        <member name="M:SS.spreadsheet.Save(System.String)">
+            <summary>
+            Save the spreadsheet to an XML file.
+            </summary>
+            <param name="filename">The filename to save to.</param>
+        </member>
+        <member name="M:SS.spreadsheet.GetCellValue(System.String)">
+            <summary>
+            Returns the value of the named cell.
+            </summary>
+            <param name="name">The name of the cell to find the value for.</param>
+            <returns>The cell value.</returns>
+        </member>
+        <member name="M:SS.spreadsheet.SetContentsOfCell(System.String,System.String)">
+            <summary>
+            Sets the contents of the named cell. Smartly determines if the content is a double, a string, or a formula. 
+            </summary>
+            <param name="name">The name of the cell to set.</param>
+            <param name="content">The contents of the cell.</param>
+            <returns>A set of cells that depend on this cell.</returns>
+        </member>
+        <member name="M:SS.spreadsheet.findValue(System.String)">
+            <summary>
+            Calculates the value for the named cell
+            </summary>
+            <param name="name">name of the cell to calculate the value for</param>
+        </member>
+        <member name="M:SS.spreadsheet.lookup(System.String)">
+            <summary>
+            The lookup function for variables to be used when evaluating a formula.
+            </summary>
+            <param name="name">The varable to look up.</param>
+            <returns>The value of the variable.</returns>
+        </member>
+        <member name="P:SS.spreadsheet.Changed">
+            <summary>
+            Tracks if the spreadsheet has been changed since last save/creation.
+            </summary>
+        </member>
+        <member name="T:SS.Cell">
+            <summary>
+            A class representing a single cell of a spreadsheet. To be expanded upon later.
+            </summary>
+        </member>
+        <member name="M:SS.Cell.#ctor(System.Object)">
+            <summary>
+            A constructor for the cell.
+            </summary>
+            <param name="_contents">The contents of the new cell.</param>
+        </member>
+        <member name="P:SS.Cell.contents">
+            <summary>
+            The cell contents.
+            </summary>
+        </member>
+        <member name="P:SS.Cell.value">
+            <summary>
+            The cell value.
+            </summary>
+        </member>
+        <member name="P:SS.Cell.type">
+            <summary>
+            The cell type. Keeps track if the cell is a double cell (1), a string cell (2), or a formula cell (3).
+            </summary>
+        </member>
+    </members>
+</doc>

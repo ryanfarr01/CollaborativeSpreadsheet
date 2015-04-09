@@ -1,0 +1,174 @@
+﻿// Brent Bagley
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using SpreadsheetUtilities;
+using System.Text.RegularExpressions;
+
+namespace SS
+{
+    /// <summary>
+    /// Spreadsheet that implements the AbstractSpreadsheet specification.
+    /// </summary>
+    public class SpreadSheet : AbstractSpreadsheet
+    {
+        /// <summary>
+        /// Data structure that does two jobs: Keeps track of each cell name that is not empty and stores the associated cells for later use.
+        /// </summary>
+        Dictionary<string,Cell> filledCells;
+
+        /// <summary>
+        /// A graph that keeps track of the relationships between cells.
+        /// </summary>
+        DependencyGraph relationships;
+
+        /// <summary>
+        /// Class for the underlying storage and manipulation of data for a spreadsheet application.
+        /// </summary>
+        public SpreadSheet()
+        {
+            filledCells = new Dictionary<string, Cell>();
+            relationships = new DependencyGraph();
+        }
+
+        /// <summary>
+        /// Returns a list of cells that are not empty.
+        /// </summary>
+        /// <returns>Returns a list of all cells that are not empty</returns>
+        public override IEnumerable<string> GetNamesOfAllNonemptyCells()
+        {
+            return filledCells.Keys;
+        }
+
+        /// <summary>
+        /// Returns the contents of the named cell. If the cell is empty returns an empty string: "". Throws an
+        /// exception null is provided instead of a string. 
+        /// </summary>
+        /// <param name="name">Name of the cell to get the contents of.</param>
+        /// <returns>The contents of the named cell.</returns>
+        public override object GetCellContents(string name)
+        {
+            if (!validCellName(name))
+                throw new InvalidNameException();
+
+            if (filledCells.ContainsKey(name))
+                return filledCells[name].contents;
+            
+            return "";
+        }
+
+        /// <summary>
+        /// Sets the named cell to have the specified contents.
+        /// </summary>
+        /// <param name="name">The cell name to set contents of.</param>
+        /// <param name="number">The contents of the cell.</param>
+        /// <returns>Returns and cells that need to be recalucated based on this change.</returns>
+        public override ISet<string> SetCellContents(string name, double number)
+        {
+            if(!validCellName(name))
+                throw new InvalidNameException();
+            filledCells[name] = new Cell(number);
+            relationships.ReplaceDependees(name, new List<string>());
+            return new HashSet<string>(GetCellsToRecalculate(name));
+        }
+
+        /// <summary>
+        /// Sets the named cell to have the specified contents.
+        /// </summary>
+        /// <param name="name">The cell name to set contents of.</param>
+        /// <param name="number">The contents of the cell.</param>
+        /// <returns>Returns and cells that need to be recalucated based on this change.</returns>
+        public override ISet<string> SetCellContents(string name, string text)
+        {
+            if (text == null)
+                throw new ArgumentNullException();
+            if (!validCellName(name))
+                throw new InvalidNameException();
+
+            if (text != "")
+                filledCells[name] = new Cell(text);
+            else
+                filledCells.Remove(name);
+
+            relationships.ReplaceDependees(name, new List<string>());
+
+            return new HashSet<string>(GetCellsToRecalculate(name));
+        }
+
+        /// <summary>
+        /// Sets the named cell to have the specified contents.
+        /// </summary>
+        /// <param name="name">The cell name to set contents of.</param>
+        /// <param name="number">The contents of the cell.</param>
+        /// <returns>Returns and cells that need to be recalucated based on this change.</returns>
+        public override ISet<string> SetCellContents(string name, SpreadsheetUtilities.Formula formula)
+        {
+            if (formula == null)
+                throw new ArgumentNullException();
+
+            if (!validCellName(name))
+                throw new InvalidNameException();
+
+            List<string> temp = new List<string>(relationships.GetDependees(name)); // temporarlly store the dependees incase they need to be reset
+
+            relationships.ReplaceDependees(name, formula.GetVariables()); // Replace the dependees
+
+
+            // If the replacement will not result in a circular dependency perform the replacement
+            // otherwise, replace the dependees and throw a circular exception
+            try
+            {
+                HashSet<string> recalculate = new HashSet<string>(GetCellsToRecalculate(name));
+            }
+            catch(CircularException e)
+            {
+                relationships.ReplaceDependees(name, temp);
+                throw new CircularException();
+            }
+
+            filledCells[name] = new Cell(formula);
+
+            return new HashSet<string>(GetCellsToRecalculate(name));
+        }
+
+        /// <summary>
+        /// Returns all the cells that are direct dependents of the named cell.
+        /// </summary>
+        /// <param name="name">The cell to find the direct dependents of.</param>
+        /// <returns>The cells that are direct dependents of the named cell.</returns>
+        protected override IEnumerable<string> GetDirectDependents(string name)
+        {
+            if (!validCellName(name))
+                throw new InvalidNameException();
+
+            return relationships.GetDependents(name);
+        }
+
+        /// <summary>
+        /// Determines if the cell is 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        private Boolean validCellName(string name)
+        {
+            
+            if (name == null)
+                return false;
+            Regex nameChecker = new Regex("^[a-zA-Z_][0-9a-zA-Z_]*",0);
+            return nameChecker.IsMatch(name); 
+        }
+    }
+
+    public class Cell
+    {
+        public Object contents { get; set; }
+
+        public Cell(Object _contents)
+        {
+            contents = _contents;
+        }
+    }
+}

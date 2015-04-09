@@ -1,0 +1,51 @@
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SS;
+using SpreadsheetUtilities;
+
+namespace SpreadsheetTests
+{
+    [TestClass]
+    public class UnitTest1
+    {
+        [TestMethod]
+        public void Constructor()
+        {
+            SpreadSheet spreadsheet = new SpreadSheet();
+            List<string> list = new List<string>(spreadsheet.GetNamesOfAllNonemptyCells());
+            Assert.AreEqual(0, list.Count); // the spreadsheet has only empty cells
+
+        }
+
+        // Test than an InvalidNameException is thrown when a null name is used and an invalid name is used when setting the contents of a cell
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void SetCellContentsNameNull()
+        {
+            SpreadSheet spreadsheet = new SpreadSheet();
+            spreadsheet.SetCellContents(null, 1);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void SetCellContentsNameInvalid()
+        {
+            SpreadSheet spreadsheet = new SpreadSheet();
+            spreadsheet.SetCellContents("1a", 1);
+        }
+
+        // Test set contents to double
+        [TestMethod]
+        public void SetCellNumber()
+        {
+
+
+        }
+
+        [TestMethod]
+        public void TestMethod1()
+        {
+        }
+    }
+}

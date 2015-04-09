@@ -1,0 +1,430 @@
+﻿/// Brent Bagley
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using SS;
+using SpreadsheetUtilities;
+using System.Text.RegularExpressions;
+using System.IO;
+
+namespace SpreadsheetGUI
+{
+    /// <summary>
+    /// The user facing control for a spreadsheet.
+    /// </summary>
+    public partial class spreadsheetForm : Form
+    {
+        /// <summary>
+        /// The underlying spreadsheet data.
+        /// </summary>
+        private spreadsheet baseSpreadsheet;
+        /// <summary>
+        /// If the file has been saved or loaded.
+        /// </summary>
+        private Boolean saved = false;
+        /// <summary>
+        /// The name of this file if it was loaded or has been saved.
+        /// </summary>
+        private string fileName = "";
+        /// <summary>
+        /// keeps track of changes made so they may be undone.
+        /// </summary>
+        private Stack<undoRedo> undoStack = new Stack<undoRedo>();
+        /// <summary>
+        /// keeps track of changes undone so they may be redone.
+        /// </summary>
+        private Stack<undoRedo> redoStack = new Stack<undoRedo>();
+
+        /// <summary>
+        /// spreadsheet form constructor.
+        /// </summary>
+        public spreadsheetForm()
+        {
+            InitializeComponent();
+            baseSpreadsheet = new spreadsheet(isValid,s=>s.ToUpper(),"ps6");
+
+            spreadsheetPanel1.SelectionChanged += displaySelection;
+            spreadsheetPanel1.SetSelection(0, 0);
+        }
+
+        /// <summary>
+        /// updates the cell name, cell value, and cell contents when a new selection is made.
+        /// </summary>
+        /// <param name="ss">The spreadsheet panel.</param>
+        private void displaySelection(SpreadsheetPanel ss)
+        {
+            int row, col;
+            String value;
+            String cell;
+            ss.GetSelection(out col, out row);
+            ss.GetValue(col, row, out value);
+            cell = "" + (char)(col + 65) + (row+1);
+            
+            setFormContents(cell);
+        }
+
+        /// <summary>
+        /// updates the form elements to reflect the named cell;
+        /// </summary>
+        /// <param name="cell">name of selected cell</param>
+        private void setFormContents(string cell)
+        {
+            if (baseSpreadsheet.GetCellContents(cell) is Formula)
+                cellContentsField.Text = "=" + baseSpreadsheet.GetCellContents(cell).ToString();
+            else
+                cellContentsField.Text = baseSpreadsheet.GetCellContents(cell).ToString();
+
+            if (baseSpreadsheet.GetCellValue(cell) is FormulaError)
+                cellValueField.Text = "Invalid Formula";
+            else
+                cellValueField.Text = "Cell Value: " + baseSpreadsheet.GetCellValue(cell).ToString();
+
+            cellNameField.Text = "Cell Selected: " + cell;
+        }
+
+
+        /// <summary>
+        /// Closes the spreadsheet.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void closeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (cancelDialog("This action will result is data loss. Do you wish to continue with this action?","Data Loss Warning"))
+                Close();
+        }
+
+        /// <summary>
+        /// Displays a message to the user and requests a boolean response. Used for data loss warning messages.
+        /// </summary>
+        /// <param name="p1">The Message to show to the user</param>
+        /// <param name="p2">The dialog box title</param>
+        /// <returns></returns>
+        private bool cancelDialog(string p1, string p2)
+        {
+            DialogResult result = MessageBox.Show(p1, p2, MessageBoxButtons.YesNo);
+            if (result == DialogResult.Yes)
+                return true;
+            else
+                return false;
+        }
+
+        /// <summary>
+        /// Opens a new spreadsheet.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void newToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Tell the application context to run the form on the same
+            // thread as the other forms.
+            SpreadsheetApplicationContext.getAppContext().RunForm(new spreadsheetForm());
+        }
+
+        /// <summary>
+        /// Event of pressing return while application focus is on the cell content text box. Saves the inputted contents to the cell.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void cellContentsField_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Return)
+            {
+                // get cell name
+                int row, col;
+                String cell;
+                spreadsheetPanel1.GetSelection(out col, out row);
+                cell = "" + (char)(col + 65) + (row + 1);
+                
+                // try to set cell contents, if successful create an undo object and place in undo stack.
+                try
+                {
+                    undoStack.Push(new undoRedo(cell, setCellContent(cell, cellContentsField.Text)));
+                }
+                catch (CircularException)
+                {
+                    MessageBox.Show("Invalid Input: Circular Dependency");
+                }
+                setFormContents(cell);
+                // set focus to the spreadsheet panel
+                spreadsheetPanel1.Focus();
+            }            
+        }
+
+        /// <summary>
+        /// Set the named cell contents
+        /// </summary>
+        /// <param name="cell">Name of cell</param>
+        /// <param name="contents">Contents to set</param>
+        /// <returns>the previous contents of the cell</returns>
+        private string setCellContent(string cell, string contents)
+        {
+                string previousValue;
+
+                if (baseSpreadsheet.GetCellContents(cell) is Formula)
+                    previousValue = "=" + baseSpreadsheet.GetCellContents(cell).ToString();
+                else
+                    previousValue = baseSpreadsheet.GetCellContents(cell).ToString();
+                
+                updateCellValues(baseSpreadsheet.SetContentsOfCell(cell, contents));
+
+                return previousValue;
+        }
+
+        /// <summary>
+        /// update the displayed value of all cells in the set.
+        /// </summary>
+        /// <param name="set">Set of cells to update</param>
+        private void updateCellValues(IEnumerable<string> set)
+        {
+            int row, col;
+            string value;
+            foreach (string cell in set)
+            {
+                col = getCol(cell);
+                row = getRow(cell);
+                if (baseSpreadsheet.GetCellValue(cell) is FormulaError)
+                    value = "Formula Error";
+                else
+                    value = baseSpreadsheet.GetCellValue(cell).ToString();
+
+                spreadsheetPanel1.SetValue(col, row, value);
+            }
+        }
+
+        /// <summary>
+        /// gets the column of a cell from the cell name.
+        /// </summary>
+        /// <param name="cell">the cell name</param>
+        /// <returns>the column of the cell</returns>
+        private int getCol(string cell)
+        {
+            return (int)cell[0] - 65;
+        }
+
+        /// <summary>
+        /// gets the row of a cell from the cell name.
+        /// </summary>
+        /// <param name="cell">the cell name</param>
+        /// <returns>the row of the cell</returns>
+        private int getRow(string cell)
+        {
+            return Int32.Parse(cell.Substring(1, cell.Length - 1))-1;
+        }
+
+        /// <summary>
+        /// the validation deligate given to the spreadsheet storage object.
+        /// </summary>
+        /// <param name="s">string to check</param>
+        /// <returns>true if valid, false if not</returns>
+        private Boolean isValid(string s)
+        {
+            Regex nameChecker = new Regex("[a-zA-Z][1-9][0-9]?", 0); // meets basic rules.
+            return nameChecker.IsMatch(s);
+        }
+
+        /// <summary>
+        /// Opens a spreadsheet
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void openToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // establish if the user wants to open file in case of potential data loss.
+            Boolean check = !baseSpreadsheet.Changed;
+            if (!check) {
+                if (cancelDialog("This action will result is data loss. Do you wish to continue with this action?", "Data Loss Warning"))
+                    check = true;
+            }
+
+            // open file sequence.
+            if(check){
+                OpenFileDialog openDialog = new OpenFileDialog();
+                openDialog.Filter = "sprd files (*.sprd)|*.sprd|All files (*.*)|*.*";
+                openDialog.FilterIndex = 1;
+                openDialog.RestoreDirectory = true;
+
+                if (openDialog.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        // set the baseSpreadsheet as the opened spreadsheet
+                        baseSpreadsheet = new spreadsheet(openDialog.FileName, isValid, s => s.ToUpper(), "ps6");
+                        saved = true;
+                        fileName = openDialog.FileName;
+                        
+                        // update all cells with new values.
+                        int row, col;
+                        String cell;
+                        spreadsheetPanel1.GetSelection(out col, out row);
+                        spreadsheetPanel1.Clear();
+                        updateCellValues(baseSpreadsheet.GetNamesOfAllNonemptyCells());
+                        cell = "" + (char)(col + 65) + (row + 1);
+                        setFormContents(cell);
+
+                    }
+                    catch(Exception){
+                        MessageBox.Show("Unable to load spreadsheet");
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Saves the spreadsheet.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+            SaveFileDialog saveDialog = new SaveFileDialog();
+            saveDialog.FileName = fileName;
+            saveDialog.Filter = "sprd files (*.sprd)|*.sprd|All files (*.*)|*.*";
+            saveDialog.FilterIndex = 1;
+            saveDialog.RestoreDirectory = true;
+
+            if (saveDialog.ShowDialog() == DialogResult.OK)
+            {
+                // auto append .sprd
+                if (saveDialog.FilterIndex == 1)
+                    if (!saveDialog.FileName.EndsWith(".sprd"))
+                        saveDialog.FileName += ".sprd";
+
+                // save dialog to prevent unintentional overwrite.
+                if (saveDialog.FileName != fileName)
+                {
+                    if (File.Exists(saveDialog.FileName))
+                    {
+                        if (cancelDialog("This action will overwrite a file. Do you wish to continue with this action?", "Overwrite Warning"))
+                            saveFile(saveDialog.FileName);
+                    }
+                    else
+                        saveFile(saveDialog.FileName);
+                }
+                else
+                    saveFile(saveDialog.FileName);
+
+            }
+        }
+
+        /// <summary>
+        /// helper method to save the spreadsheet.
+        /// </summary>
+        /// <param name="saveFileName">The file name of the saved file</param>
+        private void saveFile(string saveFileName)
+        {
+            baseSpreadsheet.Save(saveFileName);
+            saved = true;
+            fileName = saveFileName;
+        }
+
+        /// <summary>
+        /// Key press events for when the focus is on the spreadsheet panel. Undo, redo, jump to edit contents.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void spreadsheetPanel1_KeyDown(object sender, KeyEventArgs e)
+        {
+            // this will catch circular exceptions caused by undo or redo
+            try
+            {
+                // undo
+                if (e.KeyCode == Keys.Z && ModifierKeys.HasFlag(Keys.Control))
+                {
+                    if (undoStack.Count > 0)
+                    {
+                        undoRedo temp = undoStack.Pop();
+
+                        redoStack.Push(new undoRedo(temp.cellName, setCellContent(temp.cellName, temp.contents))); 
+                        int row, col;
+                        String cell;
+                        spreadsheetPanel1.GetSelection(out col, out row);
+                        cell = "" + (char)(col + 65) + (row + 1);
+                        setFormContents(cell);
+
+                    }
+                }
+                else if (e.KeyCode == Keys.Y && ModifierKeys.HasFlag(Keys.Control))
+                {
+                    // redo
+                    if (redoStack.Count > 0)
+                    {
+                        undoRedo temp = redoStack.Pop();
+
+                        undoStack.Push(new undoRedo(temp.cellName, setCellContent(temp.cellName, temp.contents)));
+                        int row, col;
+                        String cell;
+                        spreadsheetPanel1.GetSelection(out col, out row);
+                        cell = "" + (char)(col + 65) + (row + 1);
+                        setFormContents(cell);
+                    }
+                }
+                else if (char.IsLetterOrDigit((char)e.KeyCode))
+                {
+                    // jump to editing the content field
+                    cellContentsField.Focus();
+                    if (!ModifierKeys.HasFlag(Keys.Shift))
+                        SendKeys.Send(e.KeyCode.ToString().ToLower());
+                    else
+                        SendKeys.Send(e.KeyCode.ToString());
+                }
+
+            }
+            catch (CircularException)
+            {
+                MessageBox.Show("Invalid Input: Circular Dependency");
+            }
+
+        }
+
+        /// <summary>
+        /// A data storage class for storing changes to the spreadsheet.
+        /// </summary>
+        private class undoRedo
+        {
+            /// <summary>
+            /// contents pre change
+            /// </summary>
+            public string contents{ get; private set;}
+            /// <summary>
+            /// name of changed cell
+            /// </summary>
+            public string cellName { get; private set;}
+
+            /// <summary>
+            /// constructor
+            /// </summary>
+            /// <param name="name">name of cell</param>
+            /// <param name="content">contents pre change</param>
+            public undoRedo(string name, string content)
+            {
+                cellName = name;
+                contents = content;
+            }
+        }
+
+        private void editCellContentsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("You can edit the contents of the currently selected cell by changing the string inside the text box and then pressing return. Note: After selecting a cell, pressing any letter or digit will begin editing the cell contents automatically.");
+        }
+
+        private void undoRedoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("You may undo changes made to the spreadsheet by pressing CTRL+Z.\nYou may redo changes made to the spreadsheet by pressing CTRL+Y.");
+        }
+
+        private void selectNewCellToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("You may select a new cell by clicking on the cell you wish to select");
+        }
+
+    }
+}

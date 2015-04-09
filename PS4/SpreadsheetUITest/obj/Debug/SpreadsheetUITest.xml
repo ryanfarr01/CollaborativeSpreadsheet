@@ -1,0 +1,488 @@
+﻿<?xml version="1.0"?>
+<doc>
+<assembly>
+<name>
+SpreadsheetUITest
+</name>
+</assembly>
+<members>
+<member name="M:SpreadsheetUITest.SpreadsheetUITest.UIMap.HelpMenuTest">
+	<summary>
+Ensures the Help Menu does not throw any exceptions. These methods have no effect beyond simply displaying their message.
+</summary>
+</member><member name="M:SpreadsheetUITest.SpreadsheetUITest.UIMap.InputDouble">
+	<summary>
+InputDouble - Use 'InputDoubleParams' to pass parameters into this method.
+</summary>
+</member><member name="M:SpreadsheetUITest.SpreadsheetUITest.UIMap.InputString">
+	<summary>
+InputString - Use 'InputStringParams' to pass parameters into this method.
+</summary>
+</member><member name="M:SpreadsheetUITest.SpreadsheetUITest.UIMap.InputFormula">
+	<summary>
+InputFormula - Use 'InputFormulaParams' to pass parameters into this method.
+</summary>
+</member><member name="M:SpreadsheetUITest.SpreadsheetUITest.UIMap.InputFormulaError">
+	<summary>
+InputFormulaError - Use 'InputFormulaErrorParams' to pass parameters into this method.
+</summary>
+</member><member name="M:SpreadsheetUITest.SpreadsheetUITest.UIMap.CloseSpreadsheet">
+	<summary>
+Closes the spreadsheet
+</summary>
+</member><member name="M:SpreadsheetUITest.SpreadsheetUITest.UIMap.AssertDoubleCheck">
+	<summary>
+AssertDoubleCheck - Use 'AssertDoubleCheckExpectedValues' to pass parameters into this method.
+</summary>
+</member><member name="M:SpreadsheetUITest.SpreadsheetUITest.UIMap.AssertStringCheck">
+	<summary>
+AssertStringCheck - Use 'AssertStringCheckExpectedValues' to pass parameters into this method.
+</summary>
+</member><member name="M:SpreadsheetUITest.SpreadsheetUITest.UIMap.AssertFormulaCheck">
+	<summary>
+AssertFormulaCheck - Use 'AssertFormulaCheckExpectedValues' to pass parameters into this method.
+</summary>
+</member><member name="M:SpreadsheetUITest.SpreadsheetUITest.UIMap.AssertFormulaErrorCheck">
+	<summary>
+AssertFormulaErrorCheck - Use 'AssertFormulaErrorCheckExpectedValues' to pass parameters into this method.
+</summary>
+</member><member name="M:SpreadsheetUITest.SpreadsheetUITest.UIMap.MenuNewClose">
+	<summary>
+MenuNewClose - Use 'MenuNewCloseParams' to pass parameters into this method.
+</summary>
+</member><member name="M:SpreadsheetUITest.SpreadsheetUITest.UIMap.undoRedoTestPart1">
+	<summary>
+undoRedoTestPart1 - Use 'undoRedoTestPart1Params' to pass parameters into this method.
+</summary>
+</member><member name="M:SpreadsheetUITest.SpreadsheetUITest.UIMap.undoRedoAssertPart1">
+	<summary>
+undoRedoAssertPart1 - Use 'undoRedoAssertPart1ExpectedValues' to pass parameters into this method.
+</summary>
+</member><member name="M:SpreadsheetUITest.SpreadsheetUITest.UIMap.undoRedoTestPart2">
+	<summary>
+undoRedoTestPart2 - Use 'undoRedoTestPart2Params' to pass parameters into this method.
+</summary>
+</member><member name="M:SpreadsheetUITest.SpreadsheetUITest.UIMap.undoRedoAssertPart2">
+	<summary>
+undoRedoAssertPart2 - Use 'undoRedoAssertPart2ExpectedValues' to pass parameters into this method.
+</summary>
+</member><member name="M:SpreadsheetUITest.SpreadsheetUITest.UIMap.undoRedoTestPart3">
+	<summary>
+undoRedoTestPart3 - Use 'undoRedoTestPart3Params' to pass parameters into this method.
+</summary>
+</member><member name="M:SpreadsheetUITest.SpreadsheetUITest.UIMap.undoRedoAssertPart3">
+	<summary>
+undoRedoAssertPart3 - Use 'undoRedoAssertPart3ExpectedValues' to pass parameters into this method.
+</summary>
+</member><member name="M:SpreadsheetUITest.SpreadsheetUITest.UIMap.undoRedoClose">
+	<summary>
+undoRedoClose
+</summary>
+</member><member name="M:SpreadsheetUITest.SpreadsheetUITest.UIMap.saveLoadTestPart1">
+	<summary>
+saveLoadTestPart1 - Use 'saveLoadTestPart1Params' to pass parameters into this method.
+</summary>
+</member><member name="M:SpreadsheetUITest.SpreadsheetUITest.UIMap.saveLoadTestPart2">
+	<summary>
+saveLoadTestPart2 - Use 'saveLoadTestPart2Params' to pass parameters into this method.
+</summary>
+</member><member name="M:SpreadsheetUITest.SpreadsheetUITest.UIMap.saveLoadTestPart3">
+	<summary>
+saveLoadTestPart3
+</summary>
+</member><member name="M:SpreadsheetUITest.SpreadsheetUITest.UIMap.saveLoadClose">
+	<summary>
+saveLoadClose
+</summary>
+</member><member name="M:SpreadsheetUITest.SpreadsheetUITest.UIMap.saveLoadAssertPart1">
+	<summary>
+saveLoadAssertPart1 - Use 'saveLoadAssertPart1ExpectedValues' to pass parameters into this method.
+</summary>
+</member><member name="M:SpreadsheetUITest.SpreadsheetUITest.UIMap.saveLoadAssertPart2">
+	<summary>
+saveLoadAssertPart2 - Use 'saveLoadAssertPart2ExpectedValues' to pass parameters into this method.
+</summary>
+</member><member name="M:SpreadsheetUITest.SpreadsheetUITest.UIMap.saveLoadTestPart4">
+	<summary>
+saveLoadTestPart4
+</summary>
+</member><member name="M:SpreadsheetUITest.SpreadsheetUITest.UIMap.saveLoadAssertPart3">
+	<summary>
+saveLoadAssertPart3 - Use 'saveLoadAssertPart3ExpectedValues' to pass parameters into this method.
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.HelpMenuTestParams.UISpreadsheetWindowExePath">
+	<summary>
+Launch '%USERPROFILE%\Documents\Visual Studio 2013\Projects\PS4\SpreadsheetGUI\bin\Debug\SpreadsheetGUI.exe'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.HelpMenuTestParams.UISpreadsheetWindowAlternateExePath">
+	<summary>
+Launch '%USERPROFILE%\Documents\Visual Studio 2013\Projects\PS4\SpreadsheetGUI\bin\Debug\SpreadsheetGUI.exe'
+</summary>
+</member><member name="T:SpreadsheetUITest.SpreadsheetUITest.HelpMenuTestParams">
+	<summary>
+Parameters to be passed into 'HelpMenuTest'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.InputDoubleParams.UISpreadsheetWindowExePath">
+	<summary>
+Launch '%USERPROFILE%\Documents\Visual Studio 2013\Projects\PS4\SpreadsheetGUI\bin\Debug\SpreadsheetGUI.exe'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.InputDoubleParams.UISpreadsheetWindowAlternateExePath">
+	<summary>
+Launch '%USERPROFILE%\Documents\Visual Studio 2013\Projects\PS4\SpreadsheetGUI\bin\Debug\SpreadsheetGUI.exe'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.InputDoubleParams.UISpreadsheetPanel1ClientSendKeys">
+	<summary>
+Type '1' in 'spreadsheetPanel1' client
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.InputDoubleParams.UIItemEditText">
+	<summary>
+Type '1' in text box
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.InputDoubleParams.UIItemEditSendKeys">
+	<summary>
+Type '{Right}{Enter}' in text box
+</summary>
+</member><member name="T:SpreadsheetUITest.SpreadsheetUITest.InputDoubleParams">
+	<summary>
+Parameters to be passed into 'InputDouble'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.InputStringParams.UISpreadsheetPanel1ClientSendKeys">
+	<summary>
+Type 't' in 'spreadsheetPanel1' client
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.InputStringParams.UIItemEditText">
+	<summary>
+Type 'test' in text box
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.InputStringParams.UIItemEditSendKeys">
+	<summary>
+Type '{Enter}' in text box
+</summary>
+</member><member name="T:SpreadsheetUITest.SpreadsheetUITest.InputStringParams">
+	<summary>
+Parameters to be passed into 'InputString'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.InputFormulaParams.UISpreadsheetPanel1ClientSendKeys">
+	<summary>
+Type 't' in 'spreadsheetPanel1' client
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.InputFormulaParams.UIItemEditText">
+	<summary>
+Type '=C4+1' in text box
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.InputFormulaParams.UIItemEditSendKeys">
+	<summary>
+Type '{Enter}' in text box
+</summary>
+</member><member name="T:SpreadsheetUITest.SpreadsheetUITest.InputFormulaParams">
+	<summary>
+Parameters to be passed into 'InputFormula'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.InputFormulaErrorParams.UISpreadsheetPanel1ClientSendKeys">
+	<summary>
+Type 't' in 'spreadsheetPanel1' client
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.InputFormulaErrorParams.UIItemEditText">
+	<summary>
+Type '=' in text box
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.InputFormulaErrorParams.UIItemEditText1">
+	<summary>
+Type '=D4+1' in text box
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.InputFormulaErrorParams.UIItemEditSendKeys">
+	<summary>
+Type '{Enter}' in text box
+</summary>
+</member><member name="T:SpreadsheetUITest.SpreadsheetUITest.InputFormulaErrorParams">
+	<summary>
+Parameters to be passed into 'InputFormulaError'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.AssertDoubleCheckExpectedValues.UIItemEditText">
+	<summary>
+Verify that the 'Text' property of text box equals '1'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.AssertDoubleCheckExpectedValues.UICellValue1TextName">
+	<summary>
+Verify that the 'Name' property of 'Cell Value: 1' label equals 'Cell Value: 1'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.AssertDoubleCheckExpectedValues.UICellSelectedC4TextName">
+	<summary>
+Verify that the 'Name' property of 'Cell Selected: C4' label equals 'Cell Selected: C4'
+</summary>
+</member><member name="T:SpreadsheetUITest.SpreadsheetUITest.AssertDoubleCheckExpectedValues">
+	<summary>
+Parameters to be passed into 'AssertDoubleCheck'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.AssertStringCheckExpectedValues.UIItemEditText">
+	<summary>
+Verify that the 'Text' property of text box equals 'test'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.AssertStringCheckExpectedValues.UICellValuetestTextName">
+	<summary>
+Verify that the 'Name' property of 'Cell Value: test' label equals 'Cell Value: test'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.AssertStringCheckExpectedValues.UICellSelectedD4TextName">
+	<summary>
+Verify that the 'Name' property of 'Cell Selected: D4' label equals 'Cell Selected: D4'
+</summary>
+</member><member name="T:SpreadsheetUITest.SpreadsheetUITest.AssertStringCheckExpectedValues">
+	<summary>
+Parameters to be passed into 'AssertStringCheck'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.AssertFormulaCheckExpectedValues.UIItemEditText">
+	<summary>
+Verify that the 'Text' property of text box equals '=C4+1'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.AssertFormulaCheckExpectedValues.UICellValue2TextName">
+	<summary>
+Verify that the 'Name' property of 'Cell Value: 2' label equals 'Cell Value: 2'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.AssertFormulaCheckExpectedValues.UICellSelectedE4TextName">
+	<summary>
+Verify that the 'Name' property of 'Cell Selected: E4' label equals 'Cell Selected: E4'
+</summary>
+</member><member name="T:SpreadsheetUITest.SpreadsheetUITest.AssertFormulaCheckExpectedValues">
+	<summary>
+Parameters to be passed into 'AssertFormulaCheck'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.AssertFormulaErrorCheckExpectedValues.UIItemEditText">
+	<summary>
+Verify that the 'Text' property of text box equals '=D4+1'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.AssertFormulaErrorCheckExpectedValues.UIInvalidFormulaTextName">
+	<summary>
+Verify that the 'Name' property of 'Invalid Formula' label equals 'Invalid Formula'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.AssertFormulaErrorCheckExpectedValues.UICellSelectedF4TextName">
+	<summary>
+Verify that the 'Name' property of 'Cell Selected: F4' label equals 'Cell Selected: F4'
+</summary>
+</member><member name="T:SpreadsheetUITest.SpreadsheetUITest.AssertFormulaErrorCheckExpectedValues">
+	<summary>
+Parameters to be passed into 'AssertFormulaErrorCheck'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.MenuNewCloseParams.UISpreadsheetWindowExePath">
+	<summary>
+Launch '%USERPROFILE%\Documents\Visual Studio 2013\Projects\PS4\SpreadsheetGUI\bin\Debug\SpreadsheetGUI.exe'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.MenuNewCloseParams.UISpreadsheetWindowAlternateExePath">
+	<summary>
+Launch '%USERPROFILE%\Documents\Visual Studio 2013\Projects\PS4\SpreadsheetGUI\bin\Debug\SpreadsheetGUI.exe'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.MenuNewCloseParams.UISpreadsheetPanel1ClientSendKeys">
+	<summary>
+Type 't' in 'spreadsheetPanel1' client
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.MenuNewCloseParams.UIItemEditText">
+	<summary>
+Type '=1+1' in text box
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.MenuNewCloseParams.UIItemEditSendKeys">
+	<summary>
+Type '{Enter}' in text box
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.MenuNewCloseParams.UISpreadsheetPanel1ClientSendKeys1">
+	<summary>
+Type 't' in 'spreadsheetPanel1' client
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.MenuNewCloseParams.UIItemEditText1">
+	<summary>
+Type 'ttest' in text box
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.MenuNewCloseParams.UIItemEditSendKeys1">
+	<summary>
+Type '{Enter}' in text box
+</summary>
+</member><member name="T:SpreadsheetUITest.SpreadsheetUITest.MenuNewCloseParams">
+	<summary>
+Parameters to be passed into 'MenuNewClose'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.undoRedoTestPart1Params.UISpreadsheetWindowExePath">
+	<summary>
+Launch '%USERPROFILE%\Documents\Visual Studio 2013\Projects\PS4\SpreadsheetGUI\bin\Debug\SpreadsheetGUI.exe'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.undoRedoTestPart1Params.UISpreadsheetWindowAlternateExePath">
+	<summary>
+Launch '%USERPROFILE%\Documents\Visual Studio 2013\Projects\PS4\SpreadsheetGUI\bin\Debug\SpreadsheetGUI.exe'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.undoRedoTestPart1Params.UISpreadsheetPanel1ClientSendKeys">
+	<summary>
+Type 't' in 'spreadsheetPanel1' client
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.undoRedoTestPart1Params.UIItemEditText">
+	<summary>
+Type 'test' in text box
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.undoRedoTestPart1Params.UIItemEditSendKeys">
+	<summary>
+Type '{Enter}' in text box
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.undoRedoTestPart1Params.UISpreadsheetPanel1ClientSendKeys1">
+	<summary>
+Type 't' in 'spreadsheetPanel1' client
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.undoRedoTestPart1Params.UIItemEditText1">
+	<summary>
+Type 'test2' in text box
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.undoRedoTestPart1Params.UIItemEditSendKeys1">
+	<summary>
+Type '{Enter}' in text box
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.undoRedoTestPart1Params.UISpreadsheetPanel1ClientSendKeys2">
+	<summary>
+Type 't' in 'spreadsheetPanel1' client
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.undoRedoTestPart1Params.UIItemEditText2">
+	<summary>
+Type 'test3' in text box
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.undoRedoTestPart1Params.UIItemEditSendKeys2">
+	<summary>
+Type '{Enter}' in text box
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.undoRedoTestPart1Params.UISpreadsheetPanel1ClientSendKeys3">
+	<summary>
+Type 't' in 'spreadsheetPanel1' client
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.undoRedoTestPart1Params.UIItemEditText3">
+	<summary>
+Type 'test4' in text box
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.undoRedoTestPart1Params.UIItemEditSendKeys3">
+	<summary>
+Type '{Enter}' in text box
+</summary>
+</member><member name="T:SpreadsheetUITest.SpreadsheetUITest.undoRedoTestPart1Params">
+	<summary>
+Parameters to be passed into 'undoRedoTestPart1'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.undoRedoAssertPart1ExpectedValues.UIItemEditText">
+	<summary>
+Verify that the 'Text' property of text box equals 'test3'
+</summary>
+</member><member name="T:SpreadsheetUITest.SpreadsheetUITest.undoRedoAssertPart1ExpectedValues">
+	<summary>
+Parameters to be passed into 'undoRedoAssertPart1'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.undoRedoTestPart2Params.UISpreadsheetPanel1ClientSendKeys">
+	<summary>
+Type 'Control + z' in 'spreadsheetPanel1' client
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.undoRedoTestPart2Params.UISpreadsheetPanel1ClientSendKeys1">
+	<summary>
+Type 'Control + z' in 'spreadsheetPanel1' client
+</summary>
+</member><member name="T:SpreadsheetUITest.SpreadsheetUITest.undoRedoTestPart2Params">
+	<summary>
+Parameters to be passed into 'undoRedoTestPart2'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.undoRedoAssertPart2ExpectedValues.UIItemEditText">
+	<summary>
+Verify that the 'Text' property of text box equals 'test2'
+</summary>
+</member><member name="T:SpreadsheetUITest.SpreadsheetUITest.undoRedoAssertPart2ExpectedValues">
+	<summary>
+Parameters to be passed into 'undoRedoAssertPart2'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.undoRedoTestPart3Params.UISpreadsheetPanel1ClientSendKeys">
+	<summary>
+Type 'Control + y' in 'spreadsheetPanel1' client
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.undoRedoTestPart3Params.UISpreadsheetPanel1ClientSendKeys1">
+	<summary>
+Type 'Control + y' in 'spreadsheetPanel1' client
+</summary>
+</member><member name="T:SpreadsheetUITest.SpreadsheetUITest.undoRedoTestPart3Params">
+	<summary>
+Parameters to be passed into 'undoRedoTestPart3'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.undoRedoAssertPart3ExpectedValues.UIItemEditText">
+	<summary>
+Verify that the 'Text' property of text box equals 'test4'
+</summary>
+</member><member name="T:SpreadsheetUITest.SpreadsheetUITest.undoRedoAssertPart3ExpectedValues">
+	<summary>
+Parameters to be passed into 'undoRedoAssertPart3'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.saveLoadTestPart1Params.UISpreadsheetWindowExePath">
+	<summary>
+Launch '%USERPROFILE%\Documents\Visual Studio 2013\Projects\PS4\SpreadsheetGUI\bin\Debug\SpreadsheetGUI.exe'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.saveLoadTestPart1Params.UISpreadsheetWindowAlternateExePath">
+	<summary>
+Launch '%USERPROFILE%\Documents\Visual Studio 2013\Projects\PS4\SpreadsheetGUI\bin\Debug\SpreadsheetGUI.exe'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.saveLoadTestPart1Params.UISpreadsheetPanel1ClientSendKeys">
+	<summary>
+Type 't' in 'spreadsheetPanel1' client
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.saveLoadTestPart1Params.UIItemEditText">
+	<summary>
+Type 'test1' in text box
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.saveLoadTestPart1Params.UIItemEditSendKeys">
+	<summary>
+Type '{Enter}' in text box
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.saveLoadTestPart1Params.UIFilenameComboBoxEditableItem">
+	<summary>
+Select 'savetest' in 'File name:' combo box
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.saveLoadTestPart1Params.UIFilenameEditSendKeys">
+	<summary>
+Type '{Enter}' in 'File name:' text box
+</summary>
+</member><member name="T:SpreadsheetUITest.SpreadsheetUITest.saveLoadTestPart1Params">
+	<summary>
+Parameters to be passed into 'saveLoadTestPart1'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.saveLoadTestPart2Params.UISpreadsheetPanel1ClientSendKeys">
+	<summary>
+Type 't' in 'spreadsheetPanel1' client
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.saveLoadTestPart2Params.UIItemEditText">
+	<summary>
+Type 'test2' in text box
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.saveLoadTestPart2Params.UIItemEditSendKeys">
+	<summary>
+Type '{Enter}' in text box
+</summary>
+</member><member name="T:SpreadsheetUITest.SpreadsheetUITest.saveLoadTestPart2Params">
+	<summary>
+Parameters to be passed into 'saveLoadTestPart2'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.saveLoadAssertPart1ExpectedValues.UIItemEditText">
+	<summary>
+Verify that the 'Text' property of text box equals 'test1'
+</summary>
+</member><member name="T:SpreadsheetUITest.SpreadsheetUITest.saveLoadAssertPart1ExpectedValues">
+	<summary>
+Parameters to be passed into 'saveLoadAssertPart1'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.saveLoadAssertPart2ExpectedValues.UIItemEditText">
+	<summary>
+Verify that the 'Text' property of text box equals 'test2'
+</summary>
+</member><member name="T:SpreadsheetUITest.SpreadsheetUITest.saveLoadAssertPart2ExpectedValues">
+	<summary>
+Parameters to be passed into 'saveLoadAssertPart2'
+</summary>
+</member><member name="F:SpreadsheetUITest.SpreadsheetUITest.saveLoadAssertPart3ExpectedValues.UIItemEditText">
+	<summary>
+Verify that the 'Text' property of text box equals 'test1'
+</summary>
+</member><member name="T:SpreadsheetUITest.SpreadsheetUITest.saveLoadAssertPart3ExpectedValues">
+	<summary>
+Parameters to be passed into 'saveLoadAssertPart3'
+</summary>
+</member><member name="P:SpreadsheetUITest.CodedUITest1.TestContext">
+	<summary>
+Gets or sets the test context which provides
+information about and functionality for the current test run.
+</summary>
+</member>
+</members>
+</doc>

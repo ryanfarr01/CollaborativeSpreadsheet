@@ -1,0 +1,68 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using SpreadsheetUtilities;
+
+namespace SS
+{
+    public class SpreadSheet : AbstractSpreadsheet
+    {
+        Dictionary<string,Cell> filledCells;
+        DependencyGraph relationships;
+
+
+        public SpreadSheet()
+        {
+            filledCells = new Dictionary<string, Cell>();
+            relationships = new DependencyGraph();
+        }
+
+        public override IEnumerable<string> GetNamesOfAllNonemptyCells()
+        {
+            return filledCells.Keys;
+        }
+
+        public override object GetCellContents(string name)
+        {
+            return filledCells[name].contents;
+        }
+
+        public override ISet<string> SetCellContents(string name, double number)
+        {
+            filledCells[name] = new Cell(number);
+            relationships.ReplaceDependents(name, new List<string>()); 
+            return new HashSet<string>(relationships.GetDependents(name));
+        }
+
+        public override ISet<string> SetCellContents(string name, string text)
+        {
+            filledCells[name] = new Cell(text);
+            relationships.ReplaceDependents(name, new List<string>());
+            return new HashSet<string>(relationships.GetDependents(name));
+        }
+
+        public override ISet<string> SetCellContents(string name, SpreadsheetUtilities.Formula formula)
+        {
+            filledCells[name] = new Cell(formula);
+            relationships.ReplaceDependents(name, formula.GetVariables());
+            return new HashSet<string>(relationships.GetDependents(name));
+        }
+
+        protected override IEnumerable<string> GetDirectDependents(string name)
+        {
+            return relationships.GetDependees(name);
+        }
+    }
+
+    public class Cell
+    {
+        public Object contents { get; set; }
+
+        public Cell(Object _contents)
+        {
+            contents = _contents;
+        }
+    }
+}

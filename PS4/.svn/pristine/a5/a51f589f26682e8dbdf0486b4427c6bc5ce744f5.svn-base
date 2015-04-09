@@ -1,0 +1,202 @@
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SS;
+using SpreadsheetUtilities;
+
+namespace SpreadsheetTests
+{
+    [TestClass]
+    public class UnitTest1
+    {
+        [TestMethod]
+        public void Constructor0()
+        {
+            SpreadSheet spreadsheet = new SpreadSheet();
+            List<string> list = new List<string>(spreadsheet.GetNamesOfAllNonemptyCells());
+            Assert.AreEqual(0, list.Count); // the spreadsheet has only empty cells
+
+        }
+
+        [TestMethod]
+        public void Constructor3()
+        {
+            SpreadSheet spreadsheet = new SpreadSheet();
+            List<string> list = new List<string>(spreadsheet.GetNamesOfAllNonemptyCells());
+            Assert.AreEqual(0, list.Count); // the spreadsheet has only empty cells
+
+        }
+
+        [TestMethod]
+        public void Constructor4()
+        {
+            SpreadSheet spreadsheet = new SpreadSheet();
+
+            spreadsheet.SetContentsOfCell("A1", "this is a string");
+            spreadsheet.SetContentsOfCell("B1", "2.6");
+            spreadsheet.SetContentsOfCell("C1", "=1.5+10");
+
+            spreadsheet.Save("testxml.xml");
+
+            spreadsheet = new SpreadSheet("testxml.xml",s=>true,s=>s,"default");
+
+            Assert.AreEqual("this is a string", spreadsheet.GetCellContents("A1"));
+            Assert.AreEqual(2.6, spreadsheet.GetCellContents("B1"));
+            Assert.AreEqual(new Formula("1.5+10"), spreadsheet.GetCellContents("C1"));
+        }
+
+        [TestMethod]
+        public void SaveTest()
+        {
+            SpreadSheet spreadsheet = new SpreadSheet();
+
+            spreadsheet.SetContentsOfCell("A1", "this is a string");
+            spreadsheet.SetContentsOfCell("B1", "2.6");
+            spreadsheet.SetContentsOfCell("C1", "=1.5+10");
+
+            spreadsheet.Save("testxml.xml");
+        }
+
+        [TestMethod]
+        public void GetVersionTest()
+        {
+            SpreadSheet spreadsheet = new SpreadSheet();
+
+            spreadsheet.SetContentsOfCell("A1", "this is a string");
+            spreadsheet.SetContentsOfCell("B1", "2.6");
+            spreadsheet.SetContentsOfCell("C1", "=1.5+10");
+
+            spreadsheet.Save("testxml.xml");
+
+            Assert.AreEqual("default",spreadsheet.GetSavedVersion("testxml.xml"));
+
+            spreadsheet = new SpreadSheet(s => true, s => s, "Version 1");
+
+            spreadsheet.SetContentsOfCell("A1", "this is a string");
+            spreadsheet.SetContentsOfCell("B1", "2.6");
+            spreadsheet.SetContentsOfCell("C1", "=1.5+10");
+
+            spreadsheet.Save("testxml.xml");
+
+            Assert.AreEqual("Version 1", spreadsheet.GetSavedVersion("testxml.xml"));
+            
+        }
+        
+
+        // Test than an InvalidNameException is thrown when a null name is used and 
+        // an invalid name is used when setting the contents of a cell for each of
+        // the cell setting methods
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void SetContentsOfCellNameNull1()
+        {
+            SpreadSheet spreadsheet = new SpreadSheet();
+            spreadsheet.SetContentsOfCell(null, "1");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void SetContentsOfCellNameInvalid1()
+        {
+            SpreadSheet spreadsheet = new SpreadSheet();
+            spreadsheet.SetContentsOfCell("1a", "1");
+        }
+        
+        // Test set contents to double
+        [TestMethod]
+        public void SetCellNumber()
+        {
+            SpreadSheet spreadsheet = new SpreadSheet();
+            spreadsheet.SetContentsOfCell("A1", "1");
+            spreadsheet.SetContentsOfCell("B1", "0");
+            spreadsheet.SetContentsOfCell("C2", "-10");
+
+            List<string> list = new List<string>(spreadsheet.GetNamesOfAllNonemptyCells());
+            Assert.AreEqual(3, list.Count);
+            Assert.IsTrue(list.Contains("A1"));
+            Assert.IsTrue(list.Contains("B1"));
+            Assert.IsTrue(list.Contains("C2"));
+
+            Assert.AreEqual(1, (double)spreadsheet.GetCellContents("A1"));
+        }
+        
+
+        // Test set contents to string
+        [TestMethod]
+        public void SetCellString()
+        {
+            SpreadSheet spreadsheet = new SpreadSheet();
+            spreadsheet.SetContentsOfCell("A1", "Test 1");
+            spreadsheet.SetContentsOfCell("B1", "Test 2");
+            spreadsheet.SetContentsOfCell("C2", "Test 3");
+
+            List<string> list = new List<string>(spreadsheet.GetNamesOfAllNonemptyCells());
+            Assert.AreEqual(3, list.Count);
+            Assert.IsTrue(list.Contains("A1"));
+            Assert.IsTrue(list.Contains("B1"));
+            Assert.IsTrue(list.Contains("C2"));
+
+            Assert.AreEqual("Test 1", (string)spreadsheet.GetCellContents("A1"));
+            Assert.AreEqual("Test 2", (string)spreadsheet.GetCellContents("B1"));
+            Assert.AreEqual("Test 3", (string)spreadsheet.GetCellContents("C2"));
+
+            spreadsheet.SetContentsOfCell("A1", "");
+
+            list = new List<string>(spreadsheet.GetNamesOfAllNonemptyCells());
+            Assert.AreEqual(2, list.Count);
+        }
+
+        // Test set contents to formula
+        [TestMethod]
+        public void SetCellFormula()
+        {
+            SpreadSheet spreadsheet = new SpreadSheet();
+            spreadsheet.SetContentsOfCell("A1", "=1+1");
+            spreadsheet.SetContentsOfCell("B1", "=A1+1");
+            spreadsheet.SetContentsOfCell("C2", "=A1+B1");
+
+            List<string> list = new List<string>(spreadsheet.GetNamesOfAllNonemptyCells());
+            Assert.AreEqual(3, list.Count);
+            Assert.IsTrue(list.Contains("A1"));
+            Assert.IsTrue(list.Contains("B1"));
+            Assert.IsTrue(list.Contains("C2"));
+
+            Assert.AreEqual(new Formula("1+1"), (Formula)spreadsheet.GetCellContents("A1"));
+            Assert.AreEqual(new Formula("A1+1"), (Formula)spreadsheet.GetCellContents("B1"));
+            Assert.AreEqual(new Formula("A1+B1"), (Formula)spreadsheet.GetCellContents("C2"));
+
+
+            list = new List<string>(spreadsheet.SetContentsOfCell("B1", "=10"));
+            Assert.AreEqual(2, list.Count);
+            Assert.IsTrue(list.Contains("C2"));
+            Assert.IsTrue(list.Contains("B1"));
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(CircularException))]
+        public void SetCellFormula2()
+        {
+            SpreadSheet spreadsheet = new SpreadSheet();
+            spreadsheet.SetContentsOfCell("A1", "=B1");
+            spreadsheet.SetContentsOfCell("B1", "=C2");
+            spreadsheet.SetContentsOfCell("C2", "=A1");
+        }
+        
+        // Test get cell contents - this method has largely been tested above. These tests will ensure the error 
+        // handling is done corrctly and test getting an empty cell contents
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void GetCellContents()
+        {
+            SpreadSheet spreadsheet = new SpreadSheet();
+            Assert.AreEqual("", spreadsheet.GetCellContents("A1"));
+            spreadsheet.GetCellContents(null);
+        }
+
+        [TestMethod]
+        public void TestMethod1()
+        {
+        }
+         
+    }
+}

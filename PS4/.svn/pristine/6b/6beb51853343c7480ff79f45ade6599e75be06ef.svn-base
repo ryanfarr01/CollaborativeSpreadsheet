@@ -1,0 +1,315 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using SS;
+using SpreadsheetUtilities;
+using System.Text.RegularExpressions;
+using System.IO;
+
+namespace SpreadsheetGUI
+{
+    public partial class spreadsheetForm : Form
+    {
+        private spreadsheet baseSpreadsheet;
+        private Boolean saved = false;
+        private string fileName = "";
+        private Stack<undoRedo> undoStack = new Stack<undoRedo>();
+        private Stack<undoRedo> redoStack = new Stack<undoRedo>();
+        public spreadsheetForm()
+        {
+            InitializeComponent();
+            baseSpreadsheet = new spreadsheet(isValid,s=>s.ToUpper(),"ps6");
+
+            spreadsheetPanel1.SelectionChanged += displaySelection;
+            spreadsheetPanel1.SetSelection(0, 0);
+        }
+
+        // Every time the selection changes, this method is called with the
+        // Spreadsheet as its parameter.  We display the current time in the cell.
+
+        private void displaySelection(SpreadsheetPanel ss)
+        {
+            /*
+            int row, col;
+            String value;
+            String cell;
+            ss.GetSelection(out col, out row);
+            ss.GetValue(col, row, out value);
+            col+=65;
+            cell = "" + (char)(col) + row;
+            MessageBox.Show(cell);
+            ss.SetValue(col, row, "Value");
+            ss.GetValue(col, row, out value);
+            */
+            int row, col;
+            String value;
+            String cell;
+            ss.GetSelection(out col, out row);
+            ss.GetValue(col, row, out value);
+            cell = "" + (char)(col + 65) + (row+1);
+            /*
+            if (value == "")
+            {
+                ss.SetValue(col, row, cell);
+                ss.GetValue(col, row, out value);
+            }
+            */
+            setFormContents(cell);
+        }
+
+        private void setFormContents(string cell)
+        {
+            if (baseSpreadsheet.GetCellContents(cell) is Formula)
+                cellContentsField.Text = "=" + baseSpreadsheet.GetCellContents(cell).ToString();
+            else
+                cellContentsField.Text = baseSpreadsheet.GetCellContents(cell).ToString();
+
+            if (baseSpreadsheet.GetCellValue(cell) is FormulaError)
+                cellValueField.Text = "Invalid Formula";
+            else
+                cellValueField.Text = "Cell Value: " + baseSpreadsheet.GetCellValue(cell).ToString();
+
+            cellNameField.Text = "Cell Selected: " + cell;
+        }
+
+        private void spreadsheetPanel1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void closeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (cancelDialog("This action will result is data loss. Do you wish to continue with this action?","Data Loss Warning"))
+                Close();
+        }
+
+        private bool cancelDialog(string p1, string p2)
+        {
+            DialogResult result = MessageBox.Show(p1, p2, MessageBoxButtons.YesNo);
+            if (result == DialogResult.Yes)
+                return true;
+            else
+                return false;
+        }
+
+        private void newToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Tell the application context to run the form on the same
+            // thread as the other forms.
+            SpreadsheetApplicationContext.getAppContext().RunForm(new spreadsheetForm());
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void cellContentsField_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Return)
+            {
+                int row, col;
+                String cell;
+                spreadsheetPanel1.GetSelection(out col, out row);
+                cell = "" + (char)(col + 65) + (row + 1);
+                
+                try
+                {
+                    undoStack.Push(new undoRedo(cell, setCellContent(cell, cellContentsField.Text)));
+                }
+                catch (CircularException)
+                {
+                    MessageBox.Show("Invalid Input: Circular Dependency");
+                }
+                setFormContents(cell);
+                spreadsheetPanel1.Focus();
+            }            
+        }
+
+        private string setCellContent(string cell, string contents)
+        {
+                string previousValue;
+                if (baseSpreadsheet.GetCellContents(cell) is Formula)
+                    previousValue = "=" + baseSpreadsheet.GetCellContents(cell).ToString();
+                else
+                    previousValue = baseSpreadsheet.GetCellContents(cell).ToString();
+                
+                updateCellValues(baseSpreadsheet.SetContentsOfCell(cell, contents));
+
+                return previousValue;
+        }
+
+        private void updateCellValues(IEnumerable<string> set)
+        {
+            int row, col;
+            string value;
+            foreach (string cell in set)
+            {
+                col = getCol(cell);
+                row = getRow(cell);
+                if (baseSpreadsheet.GetCellValue(cell) is FormulaError)
+                    value = "Formula Error";
+                else
+                    value = baseSpreadsheet.GetCellValue(cell).ToString();
+
+                spreadsheetPanel1.SetValue(col, row, value);
+            }
+        }
+
+        private int getCol(string cell)
+        {
+            return (int)cell[0] - 65;
+        }
+
+        private int getRow(string cell)
+        {
+            return Int32.Parse(cell.Substring(1, cell.Length - 1))-1;
+        }
+
+        private Boolean isValid(string s)
+        {
+            Regex nameChecker = new Regex("[a-zA-Z][1-9][0-9]?", 0); // meets basic rules.
+            return nameChecker.IsMatch(s);
+        }
+
+        private void openToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (cancelDialog("This action will result is data loss. Do you wish to continue with this action?", "Data Loss Warning"))
+            {
+                OpenFileDialog openDialog = new OpenFileDialog();
+                openDialog.Filter = "sprd files (*.sprd)|*.sprd|All files (*.*)|*.*";
+                openDialog.FilterIndex = 1;
+                openDialog.RestoreDirectory = true;
+
+                if (openDialog.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        baseSpreadsheet = new spreadsheet(openDialog.FileName, isValid, s => s.ToUpper(), "ps6");
+                        saved = true;
+                        fileName = openDialog.FileName;
+                        
+                        int row, col;
+                        String cell;
+                        spreadsheetPanel1.GetSelection(out col, out row);
+                        spreadsheetPanel1.Clear();
+                        updateCellValues(baseSpreadsheet.GetNamesOfAllNonemptyCells());
+                        cell = "" + (char)(col + 65) + (row + 1);
+                        setFormContents(cell);
+
+                    }
+                    catch(Exception){
+                        MessageBox.Show("Unable to load spreadsheet");
+                    }
+                }
+            }
+        }
+
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog saveDialog = new SaveFileDialog();
+            saveDialog.Filter = "sprd files (*.sprd)|*.sprd|All files (*.*)|*.*";
+            saveDialog.FilterIndex = 1;
+            saveDialog.RestoreDirectory = true;
+
+            if (saveDialog.ShowDialog() == DialogResult.OK)
+            {
+                if (saveDialog.FilterIndex == 1)
+                    if (!saveDialog.FileName.EndsWith(".sprd"))
+                        saveDialog.FileName += ".sprd";
+
+                if (saveDialog.FileName != fileName)
+                {
+                    if (File.Exists(saveDialog.FileName))
+                    {
+                        if (cancelDialog("This action will overwrite a file. Do you wish to continue with this action?", "Overwrite Warning"))
+                            saveFile(saveDialog.FileName);
+                    }
+                    else
+                        saveFile(saveDialog.FileName);
+                }
+                else
+                    saveFile(saveDialog.FileName);
+
+            }
+        }
+
+        private void saveFile(string saveFileName)
+        {
+            baseSpreadsheet.Save(saveFileName);
+            saved = true;
+            fileName = saveFileName;
+        }
+
+        private void spreadsheetPanel1_KeyDown(object sender, KeyEventArgs e)
+        {
+            
+            try
+            {
+                if (e.KeyCode == Keys.Z && ModifierKeys.HasFlag(Keys.Control))
+                {
+                    if (undoStack.Count > 0)
+                    {
+                        undoRedo temp = undoStack.Pop();
+
+                        redoStack.Push(new undoRedo(temp.cellName, setCellContent(temp.cellName, temp.contents))); 
+                        int row, col;
+                        String cell;
+                        spreadsheetPanel1.GetSelection(out col, out row);
+                        cell = "" + (char)(col + 65) + (row + 1);
+                        setFormContents(cell);
+
+                    }
+                    // Undo
+                }
+                else if (e.KeyCode == Keys.Y && ModifierKeys.HasFlag(Keys.Control))
+                {
+                    if (redoStack.Count > 0)
+                    {
+                        undoRedo temp = redoStack.Pop();
+
+                        undoStack.Push(new undoRedo(temp.cellName, setCellContent(temp.cellName, temp.contents)));
+                        int row, col;
+                        String cell;
+                        spreadsheetPanel1.GetSelection(out col, out row);
+                        cell = "" + (char)(col + 65) + (row + 1);
+                        setFormContents(cell);
+                    }
+                }
+                else if (char.IsLetterOrDigit((char)e.KeyCode))
+                {
+                    cellContentsField.Focus();
+                    if (!ModifierKeys.HasFlag(Keys.Shift))
+                        SendKeys.Send(e.KeyCode.ToString().ToLower());
+                    else
+                        SendKeys.Send(e.KeyCode.ToString());
+                }
+
+            }
+            catch (CircularException)
+            {
+                MessageBox.Show("Invalid Input: Circular Dependency");
+            }
+
+        }
+
+        private class undoRedo
+        {
+            public string contents{ get; private set;}
+            public string cellName { get; private set;}
+
+            public undoRedo(string name, string content)
+            {
+                cellName = name;
+                contents = content;
+            }
+        }
+
+    }
+}
