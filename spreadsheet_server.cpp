@@ -26,8 +26,10 @@
 #include <arpa/inet.h> // inet_ntoa
 #include <sys/wait.h> // wait_for_child zombie reclamation requrement
 #include <vector>
+#include <map>
 #include <netdb.h> // addrinfo/getaddrinfo
 #include <algorithm>
+#include "spreadsheet.h"
 //#include <sys/socket.h> // Unnecessary?
 //#include <netinet/in.h> // Unnecessary?
 //#include <unistd.h> // Unnecessary?
@@ -37,6 +39,7 @@
 #define BACKLOG 10  // Max number of queued users waiting to connect
 #define INCOMING_BUFFER_SIZE 500 // Used in handle() to receive messages from sockets
 
+std::map<std::string, spreadsheet> spreadsheets;
 void split_message(std::string message, std::vector<std::string> & ret);
 
 // Signal handler to reap zombie processes
