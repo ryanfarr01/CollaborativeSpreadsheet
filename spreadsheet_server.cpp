@@ -19,6 +19,7 @@
  */
 
 
+#include <fstream> // File I/O
 #include <iostream> // console I/O
 #include <stdio.h> // perror error message printing
 #include <string> // std::strings
@@ -39,8 +40,27 @@
 #define BACKLOG 10  // Max number of queued users waiting to connect
 #define INCOMING_BUFFER_SIZE 500 // Used in handle() to receive messages from sockets
 
+// Holds all registered users.
+std::map<std::string,bool> user_list;
+
+// Holds all spreadsheets.
 std::map<std::string, spreadsheet> spreadsheets;
+
+// Used to send a string through a socket.
+int send_message(int socket_id, std::string string_to_send);
+
+// Splits messages into space-separated tokens.
 void split_message(std::string message, std::vector<std::string> & ret);
+
+// Registers a new user, or sends an error to the requesting client.
+void register_user(int user_socket_ID, std::string user_name);
+
+// Saves the current list of registered users to file.
+void save_user_list();
+
+// Handles a client's connection/spreadsheet loading request.
+void connect_requested(int user_socket_ID, std::string user_name, std::string spreadsheet_requested);
+
 
 // Signal handler to reap zombie processes
 static void wait_for_child(int sig)
@@ -48,8 +68,68 @@ static void wait_for_child(int sig)
     while (waitpid(-1, NULL, WNOHANG) > 0);
 } // end wait_for_child()
 
+
+// Processes a username registration request.
+void register_user(int user_socket_ID, std::string user_name)
+{
+	// NOTE: THIS CODE CANNOT BE USED UNTIL SOCKETS ARE ASSOCIATED WITH USERNAMES.
+
+	// If (user_socket_ID is logged in as a registered user)
+	//{
+	//	// If name isn't already registered; register it
+	//	if (user_list.find(user_name) == user_list.end())
+	//	{
+	//		user_list.insert(std::make_pair(std::string("sysadmin"), true));
+	//		save_user_list();
+	//	}
+	// 	else
+	//		// Name is already registered. Respond with error 4.
+	//		send_message(user_socket_ID, "Error 4 " + user_name + "\n");
+	//}
+}// End register_user()
+
+
+// Handles a client's connection/spreadsheet loading request.
+void connect_requested(int user_socket_ID, std::string user_name, std::string spreadsheet_requested)
+{	
+	// If the username has been registered...
+	if (user_list.find(user_name) != user_list.end())
+	{
+		// If (the spreadsheet exists)
+		//	associate this socket with desired spreadsheet, and proceed to send the sheet to it per protocol.
+		// else
+		// {
+		// 	Create the spreadsheet
+		//	associate this socket with this spreadsheet, and proceed per protocol.
+		// }
+	}
+	// Otherwise, respond with error 4
+	else
+		send_message(user_socket_ID, std::string("Error 4 " + user_name + "\n"));
+}// End connect_requested()
+
+
+// Saves the user_list map to file.  Will be read upon next server launch.
+void save_user_list()
+{
+	// Create/open the file.
+	std::ofstream user_list_file;
+	user_list_file.open("users.axis");
+	
+	// Iterate over the user_list map, and write each of its vales to file.
+	std::map<std::string, bool>::iterator it;
+	for (it = user_list.begin(); it != user_list.end(); it++)
+	{
+		user_list_file << it->first << "\n";
+	}
+	
+	// Close the file
+	user_list_file.close();
+} // End save_user_list()
+
+
 // Used to send a string through a socket.
-int send_message(int socket_id, std::string & string_to_send)
+int send_message(int socket_id, std::string string_to_send)
 {
     // Send the message across the socket.
     const char * message = string_to_send.c_str();
@@ -65,6 +145,7 @@ int send_message(int socket_id, std::string & string_to_send)
     // Return 0 to signal success.
     return 0;
 } // end send_message()
+
 
 // Called when an entire "\n"-terminated command is received.
 //   Parameter will still contain the newline character. (Easily changeable if that bothers anyone)
@@ -82,16 +163,26 @@ void message_received(int socket_id, std::string & line_received)
     {
       std::cout << *it << std::endl;
     }
-    
+	
+	// Call the appropriate functions for the received command.
+	// NOTE: THIS IS ROUGH CODE AND IS NOT INTENDED TO BE NOT ERROR-PROOF.
+	//		MUST DETECT ERRORS AS PER THE PROTOCOL.
+	if (command.at(0) == "connect")
+		connect_requested(socket_id, command.at(1), command.at(2));
+	if (command.at(0) == "register")
+		register_user(socket_id, command.at(1));
+	   
     // Echos the message back to the sender.
     std::string my_string = "Echo: " + line_received + "\n";
     send_message(socket_id, my_string);
-}
+}// End message_received()
+
 
 /*
  * http://stackoverflow.com/questions/5888022/split-string-by-single-spaces
  *
  */
+ // Splits a string message into its space-separated components.
 void split_message(std::string message, std::vector<std::string> & ret)
 {
   ret.clear();
@@ -109,7 +200,8 @@ void split_message(std::string message, std::vector<std::string> & ret)
   }
   
   ret.push_back(message.substr(pos_init, std::min(pos, static_cast<int>(message.size())) - pos_init));
-}
+}// End split_message()
+
 
 // Called when a client disconnects.
 // Removes them from any spreadsheets they were editing and closes the socket.
@@ -117,10 +209,13 @@ void client_disconnected(int socket_id)
 {
     // THIS IS PLACEHOLDER CODE. TO BE HANDLED LATER.
     std::cout << "A client has disconnected." << std::endl;
+	
+	// Remove the user's spreadsheet associations.
     
     // Close the socket
     close(socket_id);
-}
+}// End client_disconnected()
+
 
 // Handler (event) fired for each new socket.
 // Invoked in a forked thread as soon as the socket is paired.
@@ -194,6 +289,33 @@ int main(int argc, char* argv[])
 			fprintf(stderr, "Invalid port specified\n");
 			return 1; // Terminate here
 		}
+    }
+    
+    // Load the list of registered users, or create one if none exists.
+	// Check if file exists.
+    FILE * user_list_file = fopen("users.axis", "r");
+	bool exists = (user_list_file == NULL) ? false : true;
+	if (exists) fclose(user_list_file);
+	
+	// If the users.axis file exists, add its users to the user_list.
+    if (exists)
+	{
+		std::ifstream file_stream("users.axis");
+		std::string txt;
+	    
+		if (file_stream.is_open())
+			 while (file_stream.good())
+			{
+				getline(file_stream, txt);
+				user_list.insert(std::make_pair(std::string(txt), true));
+			}
+		file_stream.close();		
+	}
+	// Otherwise, create it.
+    else
+    {
+		user_list.insert(std::make_pair(std::string("sysadmin"), true));
+        save_user_list();
     }
 	
     /* Get the address info */
