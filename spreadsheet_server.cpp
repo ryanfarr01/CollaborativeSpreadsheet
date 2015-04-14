@@ -250,6 +250,7 @@ int main(int argc, char* argv[])
     /* Main loop */
     /* Pairs sockets, launches forked process for each newly paired socket */
     while (1){
+      spreadsheet spreadem("shmeh");
         // Create structures necessary for socket acceptance.
         struct sockaddr_in their_addr;
         socklen_t size = sizeof(struct sockaddr_in);
