@@ -418,7 +418,7 @@ namespace SpreadsheetGUI
 
         private void undoRedoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("You may undo changes made to the spreadsheet by pressing CTRL+Z.\nYou may redo changes made to the spreadsheet by pressing CTRL+Y.");
+            MessageBox.Show("You may undo changes made to the spreadsheet by pressing CTRL+Z.");
         }
 
         private void selectNewCellToolStripMenuItem_Click(object sender, EventArgs e)

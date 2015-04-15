@@ -40,12 +40,12 @@
             this.editCellContentsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.undoRedoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.testMessageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.testReceiveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.cellNameField = new System.Windows.Forms.ToolStripLabel();
             this.cellValueField = new System.Windows.Forms.ToolStripLabel();
             this.cellContentsField = new System.Windows.Forms.ToolStripTextBox();
             this.spreadsheetPanel1 = new SS.SpreadsheetPanel();
-            this.testReceiveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -87,7 +87,7 @@
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
             this.openToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.openToolStripMenuItem.Text = "Open";
+            this.openToolStripMenuItem.Text = "Connect";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
             // closeToolStripMenuItem
@@ -127,7 +127,7 @@
             // 
             this.undoRedoToolStripMenuItem.Name = "undoRedoToolStripMenuItem";
             this.undoRedoToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
-            this.undoRedoToolStripMenuItem.Text = "Undo/Redo";
+            this.undoRedoToolStripMenuItem.Text = "Undo";
             this.undoRedoToolStripMenuItem.Click += new System.EventHandler(this.undoRedoToolStripMenuItem_Click);
             // 
             // testMessageToolStripMenuItem
@@ -136,6 +136,13 @@
             this.testMessageToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
             this.testMessageToolStripMenuItem.Text = "Test message";
             this.testMessageToolStripMenuItem.Click += new System.EventHandler(this.TestMessageBox);
+            // 
+            // testReceiveToolStripMenuItem
+            // 
+            this.testReceiveToolStripMenuItem.Name = "testReceiveToolStripMenuItem";
+            this.testReceiveToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
+            this.testReceiveToolStripMenuItem.Text = "Test receive";
+            this.testReceiveToolStripMenuItem.Click += new System.EventHandler(this.testReceiveToolStripMenuItem_Click);
             // 
             // toolStrip1
             // 
@@ -181,13 +188,6 @@
             this.spreadsheetPanel1.Size = new System.Drawing.Size(984, 494);
             this.spreadsheetPanel1.TabIndex = 0;
             this.spreadsheetPanel1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.spreadsheetPanel1_KeyDown);
-            // 
-            // testReceiveToolStripMenuItem
-            // 
-            this.testReceiveToolStripMenuItem.Name = "testReceiveToolStripMenuItem";
-            this.testReceiveToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
-            this.testReceiveToolStripMenuItem.Text = "Test receive";
-            this.testReceiveToolStripMenuItem.Click += new System.EventHandler(this.testReceiveToolStripMenuItem_Click);
             // 
             // spreadsheetForm
             // 
