@@ -10,3 +10,15 @@ C:\Users\DrOsw_000\Documents\Visual Studio 2013\Projects\PS4\SpreadsheetTests\bi
 C:\Users\DrOsw_000\Documents\Visual Studio 2013\Projects\PS4\SpreadsheetTests\bin\Debug\SpreadsheetUtilities.xml
 C:\Users\DrOsw_000\Documents\Visual Studio 2013\Projects\PS4\SpreadsheetTests\obj\Debug\SpreadsheetTests.dll
 C:\Users\DrOsw_000\Documents\Visual Studio 2013\Projects\PS4\SpreadsheetTests\obj\Debug\SpreadsheetTests.pdb
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetTests\bin\Debug\SpreadsheetTests.dll
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetTests\bin\Debug\SpreadsheetTests.pdb
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetTests\bin\Debug\Formula.dll
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetTests\bin\Debug\Spreadsheet.dll
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetTests\bin\Debug\SpreadsheetUtilities.dll
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetTests\bin\Debug\Spreadsheet.pdb
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetTests\bin\Debug\Spreadsheet.xml
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetTests\bin\Debug\Formula.xml
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetTests\bin\Debug\SpreadsheetUtilities.xml
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetTests\obj\Debug\SpreadsheetTests.csprojResolveAssemblyReference.cache
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetTests\obj\Debug\SpreadsheetTests.dll
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetTests\obj\Debug\SpreadsheetTests.pdb

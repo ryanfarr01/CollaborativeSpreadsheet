@@ -6,7 +6,12 @@ SpreadsheetUITest
 </name>
 </assembly>
 <members>
-<member name="M:SpreadsheetUITest.SpreadsheetUITest.UIMap.HelpMenuTest">
+<member name="P:SpreadsheetUITest.CodedUITest1.TestContext">
+	<summary>
+Gets or sets the test context which provides
+information about and functionality for the current test run.
+</summary>
+</member><member name="M:SpreadsheetUITest.SpreadsheetUITest.UIMap.HelpMenuTest">
 	<summary>
 Ensures the Help Menu does not throw any exceptions. These methods have no effect beyond simply displaying their message.
 </summary>
@@ -477,11 +482,6 @@ Verify that the 'Text' property of text box equals 'test1'
 </member><member name="T:SpreadsheetUITest.SpreadsheetUITest.saveLoadAssertPart3ExpectedValues">
 	<summary>
 Parameters to be passed into 'saveLoadAssertPart3'
-</summary>
-</member><member name="P:SpreadsheetUITest.CodedUITest1.TestContext">
-	<summary>
-Gets or sets the test context which provides
-information about and functionality for the current test run.
 </summary>
 </member>
 </members>

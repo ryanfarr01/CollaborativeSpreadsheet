@@ -1,0 +1,9 @@
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\ConnectionDialog\bin\Debug\ConnectionDialog.exe.config
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\ConnectionDialog\bin\Debug\ConnectionDialog.exe
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\ConnectionDialog\bin\Debug\ConnectionDialog.pdb
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\ConnectionDialog\obj\Debug\ConnectionDialog.csprojResolveAssemblyReference.cache
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\ConnectionDialog\obj\Debug\ConnectionDialog.Properties.Resources.resources
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\ConnectionDialog\obj\Debug\ConnectionDialog.csproj.GenerateResource.Cache
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\ConnectionDialog\obj\Debug\ConnectionDialog.exe
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\ConnectionDialog\obj\Debug\ConnectionDialog.pdb
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\ConnectionDialog\obj\Debug\ConnectionDialog.ConnectionForm.resources

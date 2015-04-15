@@ -21,6 +21,11 @@ namespace SpreadsheetGUI
     /// </summary>
     public partial class spreadsheetForm : Form
     {
+        private string userName = "";
+        private string spreadsheetName = "";
+        private string IPAddress = "";
+        private string hostName = "";
+        private string port = "2116";
         /// <summary>
         /// The underlying spreadsheet data.
         /// </summary>
@@ -42,6 +47,11 @@ namespace SpreadsheetGUI
         /// </summary>
         private Stack<undoRedo> redoStack = new Stack<undoRedo>();
 
+        private CommandProcessor parser;
+        private SocketHandler socket;
+        private Boolean connected = false;
+
+
         /// <summary>
         /// spreadsheet form constructor.
         /// </summary>
@@ -52,7 +62,27 @@ namespace SpreadsheetGUI
 
             spreadsheetPanel1.SelectionChanged += displaySelection;
             spreadsheetPanel1.SetSelection(0, 0);
+            parser = new CommandProcessor(ConnectionSuccess, CellChange, Error, InvalidCommand);
         }
+
+        /// <summary>
+        /// spreadsheet form constructor.
+        /// </summary>
+        public spreadsheetForm(string _userName, string _spreadsheetName, string _IPAddres, string _hostName, string _port)
+        {
+            InitializeComponent();
+            baseSpreadsheet = new spreadsheet(isValid, s => s.ToUpper(), "ps6");
+            userName = _userName;
+            spreadsheetName = _spreadsheetName;
+            IPAddress = _IPAddres;
+            hostName = _hostName;
+            port = _port;
+
+            spreadsheetPanel1.SelectionChanged += displaySelection;
+            spreadsheetPanel1.SetSelection(0, 0);
+            parser = new CommandProcessor(ConnectionSuccess, CellChange, Error, InvalidCommand);
+        }
+
 
         /// <summary>
         /// updates the cell name, cell value, and cell contents when a new selection is made.
@@ -125,7 +155,7 @@ namespace SpreadsheetGUI
         {
             // Tell the application context to run the form on the same
             // thread as the other forms.
-            SpreadsheetApplicationContext.getAppContext().RunForm(new spreadsheetForm());
+            SpreadsheetApplicationContext.getAppContext().RunForm(new spreadsheetForm(userName,spreadsheetName,IPAddress,hostName,port));
         }
 
         /// <summary>
@@ -142,17 +172,9 @@ namespace SpreadsheetGUI
                 String cell;
                 spreadsheetPanel1.GetSelection(out col, out row);
                 cell = "" + (char)(col + 65) + (row + 1);
-                
-                // try to set cell contents, if successful create an undo object and place in undo stack.
-                try
-                {
-                    undoStack.Push(new undoRedo(cell, setCellContent(cell, cellContentsField.Text)));
-                }
-                catch (CircularException)
-                {
-                    MessageBox.Show("Invalid Input: Circular Dependency");
-                }
-                setFormContents(cell);
+
+                sendMessage("cell " + cell + " " + cellContentsField.Text);
+
                 // set focus to the spreadsheet panel
                 spreadsheetPanel1.Focus();
             }            
@@ -237,6 +259,9 @@ namespace SpreadsheetGUI
         /// <param name="e"></param>
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
+
+            SpreadsheetApplicationContext.getAppContext().RunForm(new ConnectionDialog.ConnectionForm(userName,spreadsheetName,IPAddress,hostName,port,AttemptConnection));
+            /*
             // establish if the user wants to open file in case of potential data loss.
             Boolean check = !baseSpreadsheet.Changed;
             if (!check) {
@@ -275,6 +300,7 @@ namespace SpreadsheetGUI
                     }
                 }
             }
+            */
         }
 
         /// <summary>
@@ -339,33 +365,7 @@ namespace SpreadsheetGUI
                 // undo
                 if (e.KeyCode == Keys.Z && ModifierKeys.HasFlag(Keys.Control))
                 {
-                    if (undoStack.Count > 0)
-                    {
-                        undoRedo temp = undoStack.Pop();
-
-                        redoStack.Push(new undoRedo(temp.cellName, setCellContent(temp.cellName, temp.contents))); 
-                        int row, col;
-                        String cell;
-                        spreadsheetPanel1.GetSelection(out col, out row);
-                        cell = "" + (char)(col + 65) + (row + 1);
-                        setFormContents(cell);
-
-                    }
-                }
-                else if (e.KeyCode == Keys.Y && ModifierKeys.HasFlag(Keys.Control))
-                {
-                    // redo
-                    if (redoStack.Count > 0)
-                    {
-                        undoRedo temp = redoStack.Pop();
-
-                        undoStack.Push(new undoRedo(temp.cellName, setCellContent(temp.cellName, temp.contents)));
-                        int row, col;
-                        String cell;
-                        spreadsheetPanel1.GetSelection(out col, out row);
-                        cell = "" + (char)(col + 65) + (row + 1);
-                        setFormContents(cell);
-                    }
+                    sendMessage("undo");
                 }
                 else if (char.IsLetterOrDigit((char)e.KeyCode))
                 {
@@ -425,6 +425,114 @@ namespace SpreadsheetGUI
         {
             MessageBox.Show("You may select a new cell by clicking on the cell you wish to select");
         }
+
+        private void TestMessageBox(object sender, EventArgs e)
+        {
+            sendMessage(Microsoft.VisualBasic.Interaction.InputBox("Type test message to send", "Test Message", ""));
+        }
+
+        private void testReceiveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            testRecieve(Microsoft.VisualBasic.Interaction.InputBox("Type test message to receive", "Test Receive", ""));
+        }
+
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // new stuff!
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+        public void AttemptConnection(string _userName, string _spreadsheetName, string _IPAddres, string _hostName, string _port)
+        {
+            userName = _userName;
+            spreadsheetName = _spreadsheetName;
+            IPAddress = _IPAddres;
+            hostName = _hostName;
+            port = _port;
+            int portNum;
+            
+            if(!Int32.TryParse(port,out portNum))
+            {
+                MessageBox.Show("Invalid Port");
+                return;
+            }
+
+            try
+            {
+                socket = new SocketHandler(hostName, IPAddress, portNum, parser);
+                sendMessage("connect " + userName + " " + spreadsheetName);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("Connection Failed");
+            }
+        }
+
+
+        private void ConnectionSuccess(int cellCount)
+        {
+            connected = true;
+            MessageBox.Show("Connection Successful");
+        }
+
+        private void CellChange(string cellName, string cellContents)
+        {
+            setCellContent(cellName, cellContents);
+            setFormContents(cellName);
+        }
+
+        private void Error(int errorNumber, string errorMessage)
+        {
+            MessageBox.Show(errorMessage);
+        }
+
+        private void InvalidCommand(string badCommand, string explaination)
+        {
+            MessageBox.Show(explaination);
+        }
+
+        private void testRecieve(string s)
+        {
+            parser.ProcessServerCommand(s);
+        }
+
+        private void sendMessage(string s)
+        {
+            if (connected)
+            {
+                socket.Send(s);
+            }
+            else
+            {
+                MessageBox.Show("A connection to a spreadsheet must be made to perform this action.");
+            }
+        }
+
+
+
+
+
+
 
     }
 }

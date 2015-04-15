@@ -33,18 +33,19 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.closeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.selectNewCellToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.editCellContentsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.undoRedoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.testMessageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.cellNameField = new System.Windows.Forms.ToolStripLabel();
             this.cellValueField = new System.Windows.Forms.ToolStripLabel();
             this.cellContentsField = new System.Windows.Forms.ToolStripTextBox();
             this.spreadsheetPanel1 = new SS.SpreadsheetPanel();
-            this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.editCellContentsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.undoRedoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.selectNewCellToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.testReceiveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -69,40 +70,72 @@
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.newToolStripMenuItem,
-            this.saveToolStripMenuItem,
             this.openToolStripMenuItem,
             this.closeToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
-            this.fileToolStripMenuItem.Text = "File";
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(77, 20);
+            this.fileToolStripMenuItem.Text = "Operations";
             // 
             // newToolStripMenuItem
             // 
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
-            this.newToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
-            this.newToolStripMenuItem.Text = "New";
+            this.newToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.newToolStripMenuItem.Text = "New Window";
             this.newToolStripMenuItem.Click += new System.EventHandler(this.newToolStripMenuItem_Click);
-            // 
-            // saveToolStripMenuItem
-            // 
-            this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
-            this.saveToolStripMenuItem.Text = "Save";
-            this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
             // 
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.openToolStripMenuItem.Text = "Open";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
             // closeToolStripMenuItem
             // 
             this.closeToolStripMenuItem.Name = "closeToolStripMenuItem";
-            this.closeToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
+            this.closeToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.closeToolStripMenuItem.Text = "Close";
             this.closeToolStripMenuItem.Click += new System.EventHandler(this.closeToolStripMenuItem_Click);
+            // 
+            // helpToolStripMenuItem
+            // 
+            this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.selectNewCellToolStripMenuItem,
+            this.editCellContentsToolStripMenuItem,
+            this.undoRedoToolStripMenuItem,
+            this.testMessageToolStripMenuItem,
+            this.testReceiveToolStripMenuItem});
+            this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
+            this.helpToolStripMenuItem.Text = "Help";
+            // 
+            // selectNewCellToolStripMenuItem
+            // 
+            this.selectNewCellToolStripMenuItem.Name = "selectNewCellToolStripMenuItem";
+            this.selectNewCellToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
+            this.selectNewCellToolStripMenuItem.Text = "Select New Cell";
+            this.selectNewCellToolStripMenuItem.Click += new System.EventHandler(this.selectNewCellToolStripMenuItem_Click);
+            // 
+            // editCellContentsToolStripMenuItem
+            // 
+            this.editCellContentsToolStripMenuItem.Name = "editCellContentsToolStripMenuItem";
+            this.editCellContentsToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
+            this.editCellContentsToolStripMenuItem.Text = "Edit Cell Contents";
+            this.editCellContentsToolStripMenuItem.Click += new System.EventHandler(this.editCellContentsToolStripMenuItem_Click);
+            // 
+            // undoRedoToolStripMenuItem
+            // 
+            this.undoRedoToolStripMenuItem.Name = "undoRedoToolStripMenuItem";
+            this.undoRedoToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
+            this.undoRedoToolStripMenuItem.Text = "Undo/Redo";
+            this.undoRedoToolStripMenuItem.Click += new System.EventHandler(this.undoRedoToolStripMenuItem_Click);
+            // 
+            // testMessageToolStripMenuItem
+            // 
+            this.testMessageToolStripMenuItem.Name = "testMessageToolStripMenuItem";
+            this.testMessageToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
+            this.testMessageToolStripMenuItem.Text = "Test message";
+            this.testMessageToolStripMenuItem.Click += new System.EventHandler(this.TestMessageBox);
             // 
             // toolStrip1
             // 
@@ -149,36 +182,12 @@
             this.spreadsheetPanel1.TabIndex = 0;
             this.spreadsheetPanel1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.spreadsheetPanel1_KeyDown);
             // 
-            // helpToolStripMenuItem
+            // testReceiveToolStripMenuItem
             // 
-            this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.selectNewCellToolStripMenuItem,
-            this.editCellContentsToolStripMenuItem,
-            this.undoRedoToolStripMenuItem});
-            this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-            this.helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
-            this.helpToolStripMenuItem.Text = "Help";
-            // 
-            // editCellContentsToolStripMenuItem
-            // 
-            this.editCellContentsToolStripMenuItem.Name = "editCellContentsToolStripMenuItem";
-            this.editCellContentsToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
-            this.editCellContentsToolStripMenuItem.Text = "Edit Cell Contents";
-            this.editCellContentsToolStripMenuItem.Click += new System.EventHandler(this.editCellContentsToolStripMenuItem_Click);
-            // 
-            // undoRedoToolStripMenuItem
-            // 
-            this.undoRedoToolStripMenuItem.Name = "undoRedoToolStripMenuItem";
-            this.undoRedoToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
-            this.undoRedoToolStripMenuItem.Text = "Undo/Redo";
-            this.undoRedoToolStripMenuItem.Click += new System.EventHandler(this.undoRedoToolStripMenuItem_Click);
-            // 
-            // selectNewCellToolStripMenuItem
-            // 
-            this.selectNewCellToolStripMenuItem.Name = "selectNewCellToolStripMenuItem";
-            this.selectNewCellToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
-            this.selectNewCellToolStripMenuItem.Text = "Select New Cell";
-            this.selectNewCellToolStripMenuItem.Click += new System.EventHandler(this.selectNewCellToolStripMenuItem_Click);
+            this.testReceiveToolStripMenuItem.Name = "testReceiveToolStripMenuItem";
+            this.testReceiveToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
+            this.testReceiveToolStripMenuItem.Text = "Test receive";
+            this.testReceiveToolStripMenuItem.Click += new System.EventHandler(this.testReceiveToolStripMenuItem_Click);
             // 
             // spreadsheetForm
             // 
@@ -206,7 +215,6 @@
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem newToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem closeToolStripMenuItem;
         private System.Windows.Forms.ToolStrip toolStrip1;
@@ -217,6 +225,8 @@
         private System.Windows.Forms.ToolStripMenuItem editCellContentsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem undoRedoToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem selectNewCellToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem testMessageToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem testReceiveToolStripMenuItem;
     }
 }
 

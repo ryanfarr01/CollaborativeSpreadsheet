@@ -17,3 +17,21 @@ C:\Users\DrOsw_000\Documents\Visual Studio 2013\Projects\PS4\SpreadsheetGUI\obj\
 C:\Users\DrOsw_000\Desktop\PS4\SpreadsheetGUI\bin\Debug\SpreadsheetGUI.exe.config
 C:\Users\DrOsw_000\Desktop\PS4\SpreadsheetGUI\obj\Debug\SpreadsheetGUI.exe
 C:\Users\DrOsw_000\Desktop\PS4\SpreadsheetGUI\obj\Debug\SpreadsheetGUI.pdb
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetGUI\bin\Debug\SpreadsheetGUI.exe.config
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetGUI\obj\Debug\SpreadsheetGUI.exe
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetGUI\obj\Debug\SpreadsheetGUI.pdb
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetGUI\bin\Debug\SpreadsheetGUI.exe
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetGUI\bin\Debug\SpreadsheetGUI.pdb
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetGUI\bin\Debug\Formula.dll
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetGUI\bin\Debug\Spreadsheet.dll
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetGUI\bin\Debug\SpreadsheetUtilities.dll
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetGUI\bin\Debug\Spreadsheet.pdb
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetGUI\bin\Debug\Spreadsheet.xml
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetGUI\bin\Debug\Formula.xml
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetGUI\bin\Debug\SpreadsheetUtilities.xml
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetGUI\obj\Debug\SpreadsheetGUI.csprojResolveAssemblyReference.cache
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetGUI\obj\Debug\SpreadsheetGUI.spreadsheetForm.resources
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetGUI\obj\Debug\SpreadsheetGUI.Properties.Resources.resources
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetGUI\obj\Debug\SpreadsheetGUI.csproj.GenerateResource.Cache
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetGUI\bin\Debug\ConnectionDialog.exe
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetGUI\bin\Debug\ConnectionDialog.pdb
