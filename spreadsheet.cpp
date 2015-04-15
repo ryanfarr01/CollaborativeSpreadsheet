@@ -25,6 +25,17 @@ std::string spreadsheet::get_name()
 }
 
 /*
+ * Function: get_data_map
+ *
+ * Parameter: none
+ * Returns map of spreadsheet data
+ */
+std::string spreadsheet::get_name()
+{
+    return this->data;
+}
+
+/*
  * Function: get_cell
  *
  * Parameter: name of cell whose contents you want returned
@@ -67,3 +78,4 @@ int spreadsheet::set_cell(std::string cellName, std::string cellContents)
 
   return 0;
 }
+

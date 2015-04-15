@@ -46,6 +46,9 @@ std::map<std::string,bool> user_list;
 // Holds all spreadsheets.
 std::map<std::string, spreadsheet> spreadsheets;
 
+// Spreadsheet corrisponding to users socket.
+std::map<int socket_id, spreadsheet> spreadsheets;
+
 // Used to send a string through a socket.
 int send_message(int socket_id, std::string string_to_send);
 
@@ -58,8 +61,17 @@ void register_user(int user_socket_ID, std::string user_name);
 // Saves the current list of registered users to file.
 void save_user_list();
 
+//Save the current spreadsheets contents
+void save_spreadsheets();
+
+//Save the current spreadsheets contents
+void save_spreadsheet_names();
+
 // Handles a client's connection/spreadsheet loading request.
 void connect_requested(int user_socket_ID, std::string user_name, std::string spreadsheet_requested);
+
+//Change the incoming cells contents
+void change_cell(int user_socket_id);
 
 
 // Signal handler to reap zombie processes
@@ -100,6 +112,7 @@ void connect_requested(int user_socket_ID, std::string user_name, std::string sp
 		// else
 		// {
 		// 	Create the spreadsheet
+        //  save_spreadsheet_names(spreadsheet_requested);
 		//	associate this socket with this spreadsheet, and proceed per protocol.
 		// }
 	}
@@ -108,6 +121,40 @@ void connect_requested(int user_socket_ID, std::string user_name, std::string sp
 		send_message(user_socket_ID, std::string("Error 4 " + user_name + "\n"));
 }// End connect_requested()
 
+
+//Save all of the spreadsheet names to a file. Read on server launch
+void save_spreadsheet_names(std::string spreadsheet_name)
+{
+    std::ofstream ss_names;
+    ss_names.open("spreadsheets.txt", std::ios_base::app);
+    ss_names << spreadsheet_name << std::endl;
+    ss_names.close();
+}
+
+//Save all spreadsheets contents on server. Read on server launch
+void save_spreadsheet()
+{
+    std::map<std::string,spreadsheet>::iterator it;
+    
+    for (it = spreadsheets.begin(); it != spreadsheets.end(); it++)
+    {
+        std::string file_name = it->first;
+        std::map<std::string, std::string>::iterator data_it;
+        
+        std::ofstream ss;
+        ss.open(file_name, std::ios_base::app);
+        
+        for(data_it = it->second.get_data_map().begin(); data_it != it->second.get_data_map().end(); data_it++)
+        {
+            
+            ss << data_it->first << "="<< data_it->second<< std::endl;
+            
+        }
+        
+        ss.close();
+        
+    }
+}
 
 // Saves the user_list map to file.  Will be read upon next server launch.
 void save_user_list()
@@ -127,6 +174,8 @@ void save_user_list()
 	user_list_file.close();
 } // End save_user_list()
 
+
+//Open the 
 
 // Used to send a string through a socket.
 int send_message(int socket_id, std::string string_to_send)
