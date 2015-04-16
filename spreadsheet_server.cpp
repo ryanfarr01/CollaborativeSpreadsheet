@@ -47,7 +47,7 @@ std::map<std::string,bool> user_list;
 std::map<std::string, spreadsheet> spreadsheets;
 
 // Spreadsheet corrisponding to users socket.
-std::map<int socket_id, spreadsheet> spreadsheets;
+std::map<int, spreadsheet> user_spreadsheet;
 
 // Used to send a string through a socket.
 int send_message(int socket_id, std::string string_to_send);
@@ -62,7 +62,7 @@ void register_user(int user_socket_ID, std::string user_name);
 void save_user_list();
 
 //Save the current spreadsheets contents
-void save_spreadsheets();
+void save_all_spreadsheets();
 
 //Save the current spreadsheets contents
 void save_spreadsheet_names();
@@ -71,7 +71,7 @@ void save_spreadsheet_names();
 void connect_requested(int user_socket_ID, std::string user_name, std::string spreadsheet_requested);
 
 //Change the incoming cells contents
-void change_cell(int user_socket_id);
+void change_cell(int user_socket_id, std::string cell_name, std::string new_cell_contents);
 
 
 // Signal handler to reap zombie processes
@@ -126,19 +126,19 @@ void connect_requested(int user_socket_ID, std::string user_name, std::string sp
 void save_spreadsheet_names(std::string spreadsheet_name)
 {
     std::ofstream ss_names;
-    ss_names.open("spreadsheets.txt", std::ios_base::app);
+    ss_names.open("spreadsheets.axis", std::ios_base::app);
     ss_names << spreadsheet_name << std::endl;
     ss_names.close();
 }
 
 //Save all spreadsheets contents on server. Read on server launch
-void save_spreadsheet()
+void save_all_spreadsheet()
 {
     std::map<std::string,spreadsheet>::iterator it;
     
     for (it = spreadsheets.begin(); it != spreadsheets.end(); it++)
     {
-        std::string file_name = it->first;
+        std::string file_name = it->first + ".axis";
         std::map<std::string, std::string>::iterator data_it;
         
         std::ofstream ss;
@@ -175,7 +175,29 @@ void save_user_list()
 } // End save_user_list()
 
 
-//Open the 
+//Change the requested cell
+void change_cell(int user_socket_id, std::string cell_name, std::string new_cell_contents)
+{
+    std::map<int,spreadsheet>::iterator it;
+    
+    for(it = user_spreadsheet.begin(); it != user_spreadsheet.end(); it++)
+    {
+        if(it->first == user_socket_id)
+        {
+            if((it->second.set_cell(cell_name, new_cell_contents)) == 1)
+            {
+                //Success, send to rest of clients, save it
+            }
+            
+            //returns 0. Send error
+            else
+            {
+                send_message(user_socket_id, std::string("Error 2 Circular Dependency Error\n"));
+            }
+        }
+    }
+}
+
 
 // Used to send a string through a socket.
 int send_message(int socket_id, std::string string_to_send)
