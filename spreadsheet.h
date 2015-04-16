@@ -5,6 +5,7 @@
 
 #include <string>
 #include <map>
+#include <vector>
 #include <boost/regex.hpp>
 
 class spreadsheet
@@ -17,8 +18,10 @@ class spreadsheet
   std::map<std::string, std::string> get_data_map();
 
  private:
+  int has_dependency (std::string c1, std::string c2);
   std::string name; //Name of spreadsheet
   std::map<std::string, std::string> data; //String for cell names corresponding to their cell contents
+  std::map<std::string, std::vector<std::string> > dependencies; //cell names to list of cell names that it relies on
 };
 
 #endif
