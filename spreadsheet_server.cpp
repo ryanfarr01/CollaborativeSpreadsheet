@@ -28,6 +28,7 @@
 #include <sys/wait.h> // wait_for_child zombie reclamation requrement
 #include <vector>
 #include <map>
+#include <sstream>
 #include <netdb.h> // addrinfo/getaddrinfo
 #include <algorithm>
 #include "spreadsheet.h"
@@ -48,6 +49,9 @@ std::map<std::string, spreadsheet> spreadsheets;
 
 // Spreadsheet corrisponding to users socket.
 std::map<int, spreadsheet> user_spreadsheet;
+
+//Map the spreadsheets to their connected sockets
+std::map<spreadsheet, std::vector<int> > spreadsheet_user;
 
 // Used to send a string through a socket.
 int send_message(int socket_id, std::string string_to_send);
@@ -73,6 +77,31 @@ void connect_requested(int user_socket_ID, std::string user_name, std::string sp
 //Change the incoming cells contents
 void change_cell(int user_socket_id, std::string cell_name, std::string new_cell_contents);
 
+//Send connect command
+void send_connect(int socket_id, int count);
+
+//Send cell changes
+void send_cell(int socket_id, std::string cellName, std::string cellContents);
+
+//Send error
+void send_error(int socket_id, int error_id, std::string context);
+
+void send_connect(int socket_id, int count)
+{
+  send_message(socket_id, std::string("connected " + count + '\n'));
+}
+
+void send_cell(int socket_id, std::string cellName, std::string cellContents)
+{
+  send_message(socket_id, std::string("cell " + cellName + " " + cellContents + '\n'));
+}
+
+void send_error(int socket_id, int error_id, std::string context)
+{
+  std::ostringstream stream;
+  stream << error_id;
+  send_message(socket_id, std::string("error " + stream.str() + " " + context + '\n'));
+}
 
 // Signal handler to reap zombie processes
 static void wait_for_child(int sig)
@@ -118,7 +147,7 @@ void connect_requested(int user_socket_ID, std::string user_name, std::string sp
 	}
 	// Otherwise, respond with error 4
 	else
-		send_message(user_socket_ID, std::string("Error 4 " + user_name + "\n"));
+	  send_error(user_socket_ID, 4, user_name);
 }// End connect_requested()
 
 
@@ -142,7 +171,7 @@ void save_all_spreadsheet()
         std::map<std::string, std::string>::iterator data_it;
         
         std::ofstream ss;
-        ss.open(file_name, std::ios_base::app);
+        //ss.open(file_name, std::ios_base::app);
         
         for(data_it = it->second.get_data_map().begin(); data_it != it->second.get_data_map().end(); data_it++)
         {
@@ -260,7 +289,6 @@ void split_message(std::string message, std::vector<std::string> & ret)
   int pos = message.find(' ');
   int pos_init = 0;
   int hit_space = 0;
-  message = message.substr(0, message.size()-1);
 
   while(pos != std::string::npos)
   {
@@ -348,6 +376,8 @@ void handle(int newsock)
 //   launches a callback handle in a forked thread for each.
 int main(int argc, char* argv[])
 {
+
+  
 	// Holds the port number we're going to host on.   Default to port 2000 as per protocol specification.
 	std::string port = "2000";
 
@@ -443,7 +473,6 @@ int main(int argc, char* argv[])
     /* Main loop */
     /* Pairs sockets, launches forked process for each newly paired socket */
     while (1){
-      spreadsheet spreadem("shmeh");
         // Create structures necessary for socket acceptance.
         struct sockaddr_in their_addr;
         socklen_t size = sizeof(struct sockaddr_in);
