@@ -155,13 +155,13 @@ void connect_requested(int user_socket_ID, std::string user_name, std::string sp
 void save_spreadsheet_names(std::string spreadsheet_name)
 {
     std::ofstream ss_names;
-    ss_names.open("spreadsheets.axis", std::ios_base::app);
+    ss_names.open("spreadsheets.axis");
     ss_names << spreadsheet_name << std::endl;
     ss_names.close();
 }
 
 //Save all spreadsheets contents on server. Read on server launch
-void save_all_spreadsheet()
+void save_all_spreadsheets()
 {
     std::map<std::string,spreadsheet>::iterator it;
     
@@ -171,7 +171,7 @@ void save_all_spreadsheet()
         std::map<std::string, std::string>::iterator data_it;
         
         std::ofstream ss;
-        //ss.open(file_name, std::ios_base::app);
+        ss.open(file_name.c_str());
         
         for(data_it = it->second.get_data_map().begin(); data_it != it->second.get_data_map().end(); data_it++)
         {
@@ -183,6 +183,13 @@ void save_all_spreadsheet()
         ss.close();
         
     }
+}
+
+void save_all_open_spreadsheets()
+{
+    //Loop through all open spreadsheets saving all every 30 seconds??
+    //Each spreadsheet object has its own timer
+    //
 }
 
 // Saves the user_list map to file.  Will be read upon next server launch.
