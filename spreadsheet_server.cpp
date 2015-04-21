@@ -34,7 +34,7 @@
 #include "spreadsheet.h"
 #include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-//#include <thread>
+#include <pthread.h>
 
 //#include <sys/socket.h> // Unnecessary?
 //#include <netinet/in.h> // Unnecessary?
@@ -96,11 +96,13 @@ void send_connect(int socket_id, int count)
     send_message(socket_id, std::string("connected " + count + '\n'));
 }
 
+//Send cell
 void send_cell(int socket_id, std::string cellName, std::string cellContents)
 {
     send_message(socket_id, std::string("cell " + cellName + " " + cellContents + '\n'));
 }
 
+//Send error
 void send_error(int socket_id, int error_id, std::string context)
 {
     std::ostringstream stream;
@@ -191,7 +193,7 @@ void save_spreadsheet_names(std::string spreadsheet_name)
 }
 
 //Save all spreadsheets contents on server. Read on server launch
-void save_open_spreadsheets()
+void *save_open_spreadsheets(void*)
 {
     while(1)
     {
@@ -501,8 +503,11 @@ int main(int argc, char* argv[])
         save_user_list();
     }
     //Start the save thread
-    //std::thread save_thread(save_open_spreadsheets);
-    //save_thread.join();
+//    std::thread save_thread(save_open_spreadsheets);
+//    save_thread.join();
+    pthread_t save_thread;
+    pthread_create(&save_thread, NULL, &save_open_spreadsheets, NULL);
+    pthread_join(save_thread, NULL);
 
     // Begin loading all spreadsheets from file:
     // Check if file containing list of existing spreadsheets exists.

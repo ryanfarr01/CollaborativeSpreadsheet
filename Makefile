@@ -1,5 +1,5 @@
 all: spreadsheet_server.o spreadsheet.o
-	g++ spreadsheet_server.o spreadsheet.o /usr/local/lib/libboost_regex.a /usr/local/lib/libboost_system.a /usr/local/lib/libboost_filesystem.a
+	g++ spreadsheet_server.o spreadsheet.o /usr/local/lib/libboost_regex.a /usr/local/lib/libboost_system.a /usr/local/lib/libboost_filesystem.a -lpthread
 
 spreadsheet_server.o:
 	g++ -c spreadsheet_server.cpp 
