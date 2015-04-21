@@ -164,17 +164,13 @@ void connect_requested(int user_socket_ID, std::string user_name, std::string sp
                     }
                 }
             }
-            
             //Add it to the opened
             else
             {
                 std::vector<int> temp;
                 temp.push_back(user_socket_ID);
                 spreadsheet_user[spreadsheet_requested] = temp;
-            }
-            
-            
-         
+            } 
         }
         // Otherwise, respond with error 4
         else
@@ -234,8 +230,7 @@ void *save_open_spreadsheets(void*)
                     }
                 }
             }
-            ss.close();
-            
+            ss.close(); 
         }
     }
 }
@@ -262,6 +257,7 @@ void save_user_list()
 //Change the requested cell
 void change_cell(int user_socket_id, std::string cell_name, std::string new_cell_contents)
 {
+  std::cout << "in change_cell() with cell name: " << cell_name << ", and contents: " << new_cell_contents << std::endl;
     std::map<int,std::string>::iterator it;
     
     for(it = user_spreadsheet.begin(); it != user_spreadsheet.end(); it++)
@@ -294,18 +290,24 @@ void change_cell(int user_socket_id, std::string cell_name, std::string new_cell
                             }
                         }
                     }
+                    //returns 0. Send error
+                    else
+                    {
+                        send_error(user_socket_id, 2, "Circular Dependency");
+                    }
                 }
             }
-        }
-        
-        //returns 0. Send error
-        else
-        {
-            send_error(user_socket_id, 2, "Circular Dependency");
         }
     }
 }
 
+void undo(int socket_id)
+{
+  std::cout << "In undo" << std::endl;
+  //Find the spreadsheet
+  //Call undo on spreadsheet
+  //Send the cell change to all other users on the spreadsheet
+}
 
 // Used to send a string through a socket.
 int send_message(int socket_id, std::string string_to_send)
@@ -345,7 +347,7 @@ void message_received(int socket_id, std::string & line_received)
     std::cout << "In pieces:" << std::endl;
     for(std::vector<std::string>::iterator it = command.begin(); it != command.end(); ++it)
     {
-        std::cout << *it << std::endl;
+      std::cout << *it << std::endl;
     }
     
     // Call the appropriate functions for the received command.
@@ -353,8 +355,28 @@ void message_received(int socket_id, std::string & line_received)
     //		MUST DETECT ERRORS AS PER THE PROTOCOL.
     if (command.at(0) == "connect")
         connect_requested(socket_id, command.at(1), command.at(2));
-    if (command.at(0) == "register")
+    else if (command.at(0) == "register")
         register_user(socket_id, command.at(1));
+    else if (command.at(0) == "cell")
+    {
+        std::string cell_name, cell_contents = "";
+	std::vector<std::string>::iterator it = command.begin();
+	it++;
+	cell_name = *it;
+	it++;
+	
+	for( ; it != command.end(); it++)
+	{
+	  cell_contents += *it + " ";
+	}
+	
+        change_cell(socket_id, cell_name, cell_contents);
+    }
+    else if (command.at(0) == "undo")
+    {
+      std::cout << "In undo else-if" << std::endl;
+      undo(socket_id);
+    }
 	   
     // Echos the message back to the sender.
     std::string my_string = "Echo: " + line_received + "\n";
@@ -369,6 +391,9 @@ void message_received(int socket_id, std::string & line_received)
 // Splits a string message into its space-separated components.
 void split_message(std::string message, std::vector<std::string> & ret)
 {
+    if(message[message.size()-1] == '\r')
+      message = message.substr(0, message.size()-1);
+
     ret.clear();
     int pos = message.find(' ');
     int pos_init = 0;
@@ -460,9 +485,8 @@ void handle(int newsock)
 //   launches a callback handle in a forked thread for each.
 int main(int argc, char* argv[])
 {
-
 	// Holds the port number we're going to host on.   Default to port 2000 as per protocol specification.
-	std::string port = "2000";
+	std::string port = "2117";
 
 	// If we have exactly one argument, make it our host port.
     if (argc == 2){
@@ -553,8 +577,8 @@ int main(int argc, char* argv[])
                         }
                     current_file_stream.close();
                 }
-			}
-		file_stream.close();
+	    }
+	    file_stream.close();
     } // End loading all spreadsheets from file.
     
 	

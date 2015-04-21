@@ -26,7 +26,7 @@ class spreadsheet
   std::string get_cell(std::string cellName);                    //Getter for contents of cell
   int set_cell(std::string cellName, std::string cellContents); //Setter for contents of cell
   std::map<std::string, std::string> get_data_map();
-  void undo(std::string * cell_name, std::string * cell_change);
+  int undo(std::string * cell_name, std::string * cell_change);
   void display_contents(); //Note: just for testing
 
  private:

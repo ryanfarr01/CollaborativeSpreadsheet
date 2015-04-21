@@ -143,8 +143,9 @@ int spreadsheet::set_cell(std::string cellName, std::string cellContents)
   return 1;
 }
 
-//NOTE: Returns "" and "" if there are no undos available
-void spreadsheet::undo( std::string * cell_name, std::string * cell_change )
+//NOTE: returns integer 1 if it worked or 0 if it didn't
+//Returns the cell name and cell changes so that we know what to send back to the other clients
+int spreadsheet::undo( std::string * cell_name, std::string * cell_change )
 {
   if(!changes.empty())
   {
@@ -153,13 +154,16 @@ void spreadsheet::undo( std::string * cell_name, std::string * cell_change )
     (*cell_name) = c.cell_name;
     (*cell_change) = c.cell_change;
     
-    set_cell(c.cell_name, c.cell_change);
-    changes.pop();
-    return;
+    if(set_cell(c.cell_name, c.cell_change))
+    {
+      changes.pop();
+      return 1;
+    }
   }
 
   (*cell_name) = "";
   (*cell_change) = "";
+  return 0;
 }
 
 void spreadsheet::display_contents()
