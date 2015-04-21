@@ -1,6 +1,5 @@
 
 #include "spreadsheet.h"
-#include <iostream> //DELETE THIS. This is only for testing /!\
 
 /*
  * Constructor
@@ -112,10 +111,10 @@ int spreadsheet::set_cell(std::string cellName, std::string cellContents)
     }
 
     //Testing /!\ *************************************
-    std::cout << "setting cell:" << cellName << " to:" << cellContents << std::endl;
-    std::cout << "With dependencies: " << std::endl;
-    for(std::vector<std::string>::iterator itt = temp_depends.begin(); itt != temp_depends.end(); itt++)
-      std::cout << *itt << std::endl;
+    //std::cout << "setting cell:" << cellName << " to:" << cellContents << std::endl;
+    //std::cout << "With dependencies: " << std::endl;
+    //for(std::vector<std::string>::iterator itt = temp_depends.begin(); itt != temp_depends.end(); itt++)
+    //  std::cout << *itt << std::endl;
     //End testing /!\ *********************************
 
     for(std::vector<std::string>::iterator itt = temp_depends.begin(); itt != temp_depends.end(); itt++)
@@ -123,9 +122,11 @@ int spreadsheet::set_cell(std::string cellName, std::string cellContents)
       if(has_dependency(cellName, *itt)) 
 	 return 0;
     }
-
+    
+    cellChange c(cellName, data[cellName]);
     data[cellName] = cellContents;
     dependencies[cellName] = temp_depends;
+    changes.push(c);
     return 1;
   }
 
@@ -134,9 +135,44 @@ int spreadsheet::set_cell(std::string cellName, std::string cellContents)
   //Set cell contents and return 1
   if(dependencies.count(cellName) != 0)
      dependencies.erase(cellName);
-
+  
+  cellChange c(cellName, data[cellName]);
+  changes.push(c);
   data[cellName] = originalContents;  
 
   return 1;
+}
+
+//NOTE: Returns "" and "" if there are no undos available
+void spreadsheet::undo( std::string * cell_name, std::string * cell_change )
+{
+  if(!changes.empty())
+  {
+    cellChange c = changes.top();
+    changes.pop();
+    (*cell_name) = c.cell_name;
+    (*cell_change) = c.cell_change;
+    
+    set_cell(c.cell_name, c.cell_change);
+    changes.pop();
+    return;
+  }
+
+  (*cell_name) = "";
+  (*cell_change) = "";
+}
+
+void spreadsheet::display_contents()
+{
+  for(std::map<std::string, std::string>::const_iterator it = data.begin(); it != data.end(); it++)
+  {
+    std::cout << "Cell: " << it->first << " Contents: " << it->second << std::endl;
+  }
+}
+
+spreadsheet::cellChange::cellChange(std::string name, std::string change)
+{
+  this->cell_name = name;
+  this->cell_change = change;
 }
 
