@@ -195,9 +195,12 @@ void save_open_spreadsheets()
 {
     while(1)
     {
+<<<<<<< HEAD
 
         //Get the open spreadsheets
         std::map<std::string, std::vector<int> >::iterator itOpen;
+=======
+>>>>>>> origin/master
         std::string file_name = it->first + ".axissheet";
         std::map<std::string, std::string>::iterator data_it;
         
@@ -465,7 +468,10 @@ void handle(int newsock)
 int main(int argc, char* argv[])
 {
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/master
 	// Holds the port number we're going to host on.   Default to port 2000 as per protocol specification.
 	std::string port = "2000";
 
@@ -508,11 +514,14 @@ int main(int argc, char* argv[])
         save_user_list();
     }
     
+<<<<<<< HEAD
 
     //Start the save thread
     std::thread save_thread(save_open_spreadsheets);
     save_thread.join();
 
+=======
+>>>>>>> origin/master
     // Begin loading all spreadsheets from file:
     // Check if file containing list of existing spreadsheets exists.
     FILE * sheet_list_file = fopen("spreadsheets.axis", "r");
