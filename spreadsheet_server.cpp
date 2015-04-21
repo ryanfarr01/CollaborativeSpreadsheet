@@ -34,7 +34,7 @@
 #include "spreadsheet.h"
 #include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <thread>
+//#include <thread>
 
 //#include <sys/socket.h> // Unnecessary?
 //#include <netinet/in.h> // Unnecessary?
@@ -49,7 +49,7 @@
 std::map<std::string,bool> user_list;
 
 // Holds all spreadsheets.
-std::map<std::string, spreadsheet> spreadsheets
+std::map<std::string, spreadsheet> spreadsheets;
 
 //Map user ID to spreadsheet name
 std::map<int, std::string> user_spreadsheet;
@@ -195,18 +195,9 @@ void save_open_spreadsheets()
 {
     while(1)
     {
-<<<<<<< HEAD
 
         //Get the open spreadsheets
         std::map<std::string, std::vector<int> >::iterator itOpen;
-=======
->>>>>>> origin/master
-        std::string file_name = it->first + ".axissheet";
-        std::map<std::string, std::string>::iterator data_it;
-        
-        std::ofstream ss;
-        ss.open(file_name.c_str());
-
         
         for (itOpen = spreadsheet_user.begin(); itOpen != spreadsheet_user.end(); itOpen++)
         {
@@ -468,10 +459,6 @@ void handle(int newsock)
 int main(int argc, char* argv[])
 {
 
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/master
 	// Holds the port number we're going to host on.   Default to port 2000 as per protocol specification.
 	std::string port = "2000";
 
@@ -513,15 +500,10 @@ int main(int argc, char* argv[])
         user_list.insert(std::make_pair(std::string("sysadmin"), true));
         save_user_list();
     }
-    
-<<<<<<< HEAD
-
     //Start the save thread
-    std::thread save_thread(save_open_spreadsheets);
-    save_thread.join();
+    //std::thread save_thread(save_open_spreadsheets);
+    //save_thread.join();
 
-=======
->>>>>>> origin/master
     // Begin loading all spreadsheets from file:
     // Check if file containing list of existing spreadsheets exists.
     FILE * sheet_list_file = fopen("spreadsheets.axis", "r");
