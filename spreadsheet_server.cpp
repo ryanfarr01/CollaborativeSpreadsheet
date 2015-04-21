@@ -167,7 +167,7 @@ void save_all_spreadsheets()
     
     for (it = spreadsheets.begin(); it != spreadsheets.end(); it++)
     {
-        std::string file_name = it->first + ".axis";
+        std::string file_name = it->first + ".axissheet";
         std::map<std::string, std::string>::iterator data_it;
         
         std::ofstream ss;
@@ -238,6 +238,11 @@ void change_cell(int user_socket_id, std::string cell_name, std::string new_cell
 // Used to send a string through a socket.
 int send_message(int socket_id, std::string string_to_send)
 {
+    // If socket_id is 0, we don't want to send the message.
+    //   (It's the server sending an error to itself as though it's a client)
+    if (socket_id == 0)
+        return 1;
+
     // Send the message across the socket.
     const char * message = string_to_send.c_str();
     int length = strlen(message);
@@ -384,7 +389,6 @@ void handle(int newsock)
 int main(int argc, char* argv[])
 {
 
-  
 	// Holds the port number we're going to host on.   Default to port 2000 as per protocol specification.
 	std::string port = "2000";
 
@@ -412,7 +416,7 @@ int main(int argc, char* argv[])
 		std::string txt;
 	    
 		if (file_stream.is_open())
-			 while (file_stream.good())
+			while (file_stream.good())
 			{
 				getline(file_stream, txt);
 				user_list.insert(std::make_pair(std::string(txt), true));
@@ -425,6 +429,55 @@ int main(int argc, char* argv[])
 		user_list.insert(std::make_pair(std::string("sysadmin"), true));
         save_user_list();
     }
+    
+    // Begin loading all spreadsheets from file:
+    // Check if file containing list of existing spreadsheets exists.
+    FILE * sheet_list_file = fopen("spreadsheets.axis", "r");
+	bool sheets_file_exists = (sheet_list_file == NULL) ? false : true;
+	if (sheets_file_exists) fclose(sheet_list_file);
+    
+    if (sheets_file_exists) // If the file exists...
+    {
+        // Open the existing spreadsheet names file.
+        std::ifstream file_stream("spreadsheets.axis");
+		std::string txt;
+		if (file_stream.is_open())
+            // For each spreadsheet name in the file...
+			while (file_stream.good())
+			{
+				getline(file_stream, txt);
+                
+                // If there exists a file with this name...
+                FILE * sheet_file = fopen("spreadsheets.axis", "r");
+                bool file_exists = (sheet_file == NULL) ? false : true;
+                if (file_exists)
+                {
+                    fclose(sheet_file);
+                
+                    // Open the file with this spreadsheet's name...
+                    std::ifstream current_file_stream((txt+".axis").c_str());
+                    std::string current_line;
+                    if (current_file_stream.is_open())
+                        // While new lines exist within this file...
+                        while (current_file_stream.good())
+                        {
+                            getline(current_file_stream, current_line);
+                            
+                            // Separare into cell_name and cell_contents by "=" symbol.
+                            std::string cell_name, cell_contents;
+                            int equals_index = current_line.find('=');
+                            cell_name = current_line.substr(0, equals_index);
+                            cell_contents = current_line.substr(equals_index+1, current_line.length()-(equals_index-1));
+
+                            // Set the cell to what we just read from the file.
+                            change_cell(0,cell_name,cell_contents);
+                        }
+                    current_file_stream.close();
+                }
+			}
+		file_stream.close();
+    } // End loading all spreadsheets from file.
+    
 	
     /* Get the address info */
     struct addrinfo hints, *res;
