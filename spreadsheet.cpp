@@ -31,7 +31,7 @@ std::string spreadsheet::get_name()
  * Parameter: none
  * Returns map of spreadsheet data
  */
-std::map<std::string, std::string> spreadsheet::get_data_map()
+std::map<std::string, std::string> spreadsheet::get_data_map() 
 {
     return this->data;
 }
