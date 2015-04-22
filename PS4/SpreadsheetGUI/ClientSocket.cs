@@ -262,8 +262,7 @@ public class SocketHandler
         IPHostEntry hostEntry = null;
         IPAddress address = null;
 
-        if (ip != null) // if IP address is provied, parse it
-            address = IPAddress.Parse(ip);
+        if (IPAddress.TryParse(ip, out address)) { } // if IP address is provied, parse it
         else if (host != null) // if a host name is provided, get an IP address from it
         {
             hostEntry = Dns.Resolve(host); // this function is obsolete, but works. This might need to be changed for the final version

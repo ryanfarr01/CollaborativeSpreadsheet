@@ -21,10 +21,10 @@ namespace SpreadsheetGUI
     /// </summary>
     public partial class spreadsheetForm : Form
     {
-        private string userName = "";
-        private string spreadsheetName = "";
+        private string userName = "sysadmin";
+        private string spreadsheetName = "any";
         private string IPAddress = "";
-        private string hostName = "";
+        private string hostName = "lab1-19.eng.utah.edu";
         private string port = "2116";
         /// <summary>
         /// The underlying spreadsheet data.
@@ -480,7 +480,7 @@ namespace SpreadsheetGUI
             try
             {
                 socket = new SocketHandler(hostName, IPAddress, portNum, parser);
-                sendMessage("connect " + userName + " " + spreadsheetName);
+                sendConnect("connect " + userName + " " + spreadsheetName);
             }
             catch (Exception e)
             {
@@ -526,6 +526,11 @@ namespace SpreadsheetGUI
             {
                 MessageBox.Show("A connection to a spreadsheet must be made to perform this action.");
             }
+        }
+
+        private void sendConnect(string s)
+        {
+            socket.Send(s);
         }
 
 
