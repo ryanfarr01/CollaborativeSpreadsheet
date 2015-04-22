@@ -45,18 +45,19 @@
 #define BACKLOG 10  // Max number of queued users waiting to connect
 #define INCOMING_BUFFER_SIZE 500 // Used in handle() to receive messages from sockets
 
+
 // Holds all registered users.
 std::map<std::string,bool> user_list;
 
 // Holds all spreadsheets.
-std::map<std::string, spreadsheet> spreadsheets;
+std::map<std::string, spreadsheet*> spreadsheets;
 
 //Map user ID to spreadsheet name
 std::map<int, std::string> user_spreadsheet;
 
-
 //Map spreadsheet name to all connected users (Theses spreadsheets are open)
 std::map<std::string, std::vector<int> > spreadsheet_user;
+
 
 // Used to send a string through a socket.
 int send_message(int socket_id, std::string string_to_send);
@@ -172,11 +173,29 @@ void connect_requested(int user_socket_ID, std::string user_name, std::string sp
                 spreadsheet_user[spreadsheet_requested] = temp;
             } 
         }
-        // Otherwise, respond with error 4
-        else
-            send_error(user_socket_ID, 4, user_name);
-    }// End connect_requested()
-}
+	//Otherwise, create the spreadsheet
+	else
+	{
+	  std::cout << "Making a new spreadsheet: " << spreadsheet_requested << std::endl;
+
+	  //Create spreadsheet
+	  //add it to the spreadsheet_user map
+	  //add to the spreadsheets map
+	  //add to user_spreadsheet map
+	  spreadsheet * s = new spreadsheet(spreadsheet_requested);
+	  spreadsheets.insert(std::pair<std::string, spreadsheet *>(spreadsheet_requested, s));
+
+	  std::vector<int> temp;
+	  temp.push_back(user_socket_ID);
+	  spreadsheet_user.insert(std::pair<std::string, std::vector<int> >(spreadsheet_requested, temp));
+	  user_spreadsheet.insert(std::pair<int, std::string>(user_socket_ID, spreadsheet_requested));
+	}
+    }
+    // Otherwise, respond with error 4
+    else
+        send_error(user_socket_ID, 4, user_name);
+
+}//End connect_requested()
 
 
 //Save all of the spreadsheet names to a file. Read on server launch
@@ -193,7 +212,6 @@ void *save_open_spreadsheets(void*)
 {
     while(1)
     {
-
         //Get the open spreadsheets
         std::map<std::string, std::vector<int> >::iterator itOpen;
         
@@ -209,7 +227,7 @@ void *save_open_spreadsheets(void*)
             ss.open(file_name.c_str());
             
             //get the open from the spreadsheet from the master map
-            std::map<std::string, spreadsheet>::iterator itMaster;
+            std::map<std::string, spreadsheet*>::iterator itMaster;
             for(itMaster = spreadsheets.begin(); itMaster != spreadsheets.end(); itMaster++)
             {
                 //Save every three seconds
@@ -224,7 +242,7 @@ void *save_open_spreadsheets(void*)
                     std::map<std::string, std::string>::iterator data_it;
                     
                     //Get all the cells and save them
-                    for(data_it = itMaster->second.get_data_map().begin(); data_it != itMaster->second.get_data_map().end(); data_it++)
+                    for(data_it = itMaster->second->get_data_map().begin(); data_it != itMaster->second->get_data_map().end(); data_it++)
                     {
                         ss << data_it->first << "="<< data_it->second<< std::endl;
                     }
@@ -266,13 +284,13 @@ void change_cell(int user_socket_id, std::string cell_name, std::string new_cell
         if(it->first == user_socket_id)
         {
             //get the spreadsheet from the master list
-            std::map<std::string,spreadsheet>::iterator itMaster;
+            std::map<std::string,spreadsheet*>::iterator itMaster;
             for(itMaster = spreadsheets.begin(); itMaster != spreadsheets.end(); itMaster++)
             {
                 if(it->second == itMaster->first)
                 {
                     //Change it, Make sure its good
-                    if((itMaster->second.set_cell(cell_name, new_cell_contents)) == 1)
+                    if((itMaster->second->set_cell(cell_name, new_cell_contents)) == 1)
                     {
                         //If it is ok, send the changes to all the clients
                         std::map<std::string,std::vector<int> >::iterator itOpen;
