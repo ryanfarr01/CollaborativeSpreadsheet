@@ -111,6 +111,22 @@ void send_error(int socket_id, int error_id, std::string context)
     send_message(socket_id, std::string("error " + stream.str() + " " + context + '\n'));
 }
 
+//Take in a socket ID and put the spreadsheet pointer associated. Returns 0 if it didn't work, 1 if it did
+int user_to_spreadsheet(int user, spreadsheet *s)
+{
+  if(user_spreadsheet.count(user) != 0)
+  {
+    std::string spreadsheet_name = user_spreadsheet[user];
+    if(spreadsheets.count(spreadsheet_name) != 0)
+    {
+      s = spreadsheets[spreadsheet_name];
+      return 1;
+    }
+  }
+
+  return 0;
+}
+
 // Signal handler to reap zombie processes
 static void wait_for_child(int sig)
 {
@@ -325,6 +341,21 @@ void undo(int socket_id)
   //Find the spreadsheet
   //Call undo on spreadsheet
   //Send the cell change to all other users on the spreadsheet
+  spreadsheet *s;
+  if(user_to_spreadsheet(socket_id, s))
+  {
+    std::string cell, contents;
+    if(s->undo(&cell, &contents))
+    {
+      std::vector<int> users = spreadsheet_user[s->get_name()];
+      std::vector<int>::iterator it;
+
+      for(it = users.begin(); it != users.end(); it++)
+      {
+	send_cell(*it, cell, contents);
+      }
+    }
+  }
 }
 
 // Used to send a string through a socket.
