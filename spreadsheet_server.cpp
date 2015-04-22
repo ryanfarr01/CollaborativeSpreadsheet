@@ -499,6 +499,7 @@ int main(int argc, char* argv[])
         }
     }
     
+
     // Load the list of registered users, or create one if none exists.
     // Check if file exists.
     FILE * user_list_file = fopen("users.axis", "r");
@@ -526,12 +527,17 @@ int main(int argc, char* argv[])
         user_list.insert(std::make_pair(std::string("sysadmin"), true));
         save_user_list();
     }
+
+
     //Start the save thread
 //    std::thread save_thread(save_open_spreadsheets);
 //    save_thread.join();
+    
     pthread_t save_thread;
     pthread_create(&save_thread, NULL, &save_open_spreadsheets, NULL);
-    pthread_join(save_thread, NULL);
+    //pthread_join(save_thread, NULL);
+
+
 
     // Begin loading all spreadsheets from file:
     // Check if file containing list of existing spreadsheets exists.
@@ -539,6 +545,7 @@ int main(int argc, char* argv[])
 	bool sheets_file_exists = (sheet_list_file == NULL) ? false : true;
 	if (sheets_file_exists) fclose(sheet_list_file);
     
+
     if (sheets_file_exists) // If the file exists...
     {
         // Open the existing spreadsheet names file.
@@ -593,6 +600,7 @@ int main(int argc, char* argv[])
         perror("getaddrinfo"); // Error if getaddrinfo failed
         return 1;
     }
+
     
     /* Create the socket */
     int sock = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
@@ -633,9 +641,11 @@ int main(int argc, char* argv[])
         return 1;
     }
     
+
     /* Main loop */
     /* Pairs sockets, launches forked process for each newly paired socket */
     while (1){
+
         // Create structures necessary for socket acceptance.
         struct sockaddr_in their_addr;
         socklen_t size = sizeof(struct sockaddr_in);
