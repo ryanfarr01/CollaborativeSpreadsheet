@@ -84,21 +84,27 @@ void connect_requested(int user_socket_ID, std::string user_name, std::string sp
 void change_cell(int user_socket_id, std::string cell_name, std::string new_cell_contents);
 
 //Send connect command
-void send_connect(int socket_id, int count);
+void send_connect(const int socket_id, const int count);
 
 //Send cell changes
-void send_cell(int socket_id, std::string cellName, std::string cellContents);
+void send_cell(const int socket_id, const std::string cellName, const std::string cellContents);
 
 //Send error
 void send_error(int socket_id, int error_id, std::string context);
 
-void send_connect(int socket_id, int count)
+void send_connect(const int socket_id, const int count)
 {
-    send_message(socket_id, std::string("connected " + count + '\n'));
+    std::cout << "in send_connect" << std::endl;
+    std::string message = "connected ";
+    std::stringstream ss;
+    ss << count;
+    message += ss.str();
+    message += '\n';
+    send_message(socket_id, message);
 }
 
 //Send cell
-void send_cell(int socket_id, std::string cellName, std::string cellContents)
+void send_cell(const int socket_id, const std::string cellName, const std::string cellContents)
 {
     send_message(socket_id, std::string("cell " + cellName + " " + cellContents + '\n'));
 }
@@ -162,7 +168,7 @@ void connect_requested(int user_socket_ID, std::string user_name, std::string sp
     {
         //If the spreadsheet exists
         if(spreadsheets.count(spreadsheet_requested) == 1)
-        {
+        {	  
             //associate the socket with the spreadsheet
             user_spreadsheet[user_socket_ID] = spreadsheet_requested;
             
@@ -190,19 +196,19 @@ void connect_requested(int user_socket_ID, std::string user_name, std::string sp
             }
             if(spreadsheets[spreadsheet_requested]->get_data_map().size() == 0)
             {
-                send_message(user_socket_ID, "connected 0\n");
+                send_connect(user_socket_ID, 0);
             }
-            else{
-                std::string message = "connected ";
-                message += spreadsheets[spreadsheet_requested]->get_data_map().size();
-                message += "\n";
-                send_message(user_socket_ID,message);
-            //Send the cells
+            else
+	    {
+	        send_connect(user_socket_ID, spreadsheets[spreadsheet_requested]->num_cells());
+                
+		//Send the cells
                 std::map<std::string, std::string>::iterator itCells;
-            for(itCells = spreadsheets[spreadsheet_requested]->get_data_map().begin(); itCells != spreadsheets[spreadsheet_requested]->get_data_map().end(); itCells++)
-            {
-                send_cell(user_socket_ID, itCells->first, itCells->second);
-            }
+                for(itCells = spreadsheets[spreadsheet_requested]->get_data_map().begin(); itCells != spreadsheets[spreadsheet_requested]->get_data_map().end(); itCells++)
+                {
+		  //send_cell(user_socket_ID, itCells->first, itCells->second);
+		  send_message(user_socket_ID, "test1\n");
+                }
             }
         }
 	//Otherwise, create the spreadsheet
@@ -215,8 +221,9 @@ void connect_requested(int user_socket_ID, std::string user_name, std::string sp
 	  //add to the spreadsheets map
 	  //add to user_spreadsheet map
 	  spreadsheet * s = new spreadsheet(spreadsheet_requested);
+	  send_connect(user_socket_ID, s->num_cells());
 	  spreadsheets.insert(std::pair<std::string, spreadsheet *>(spreadsheet_requested, s));
-
+	  
 	  std::vector<int> temp;
 	  temp.push_back(user_socket_ID);
 	  spreadsheet_user.insert(std::pair<std::string, std::vector<int> >(spreadsheet_requested, temp));
@@ -594,14 +601,9 @@ int main(int argc, char* argv[])
     }
 
 
-    //Start the save thread
-//    std::thread save_thread(save_open_spreadsheets);
-//    save_thread.join();
-    
+    //Start the save thread    
     pthread_t save_thread;
     pthread_create(&save_thread, NULL, &save_open_spreadsheets, NULL);
-    //pthread_join(save_thread, NULL);
-
 
 
     // Begin loading all spreadsheets from file:

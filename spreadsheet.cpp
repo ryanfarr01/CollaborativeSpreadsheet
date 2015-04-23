@@ -119,6 +119,8 @@ int spreadsheet::set_cell(std::string cellName, std::string cellContents)
 
     for(std::vector<std::string>::iterator itt = temp_depends.begin(); itt != temp_depends.end(); itt++)
     {
+      if(*itt == cellName)
+	return 0;
       if(has_dependency(cellName, *itt)) 
 	 return 0;
     }
