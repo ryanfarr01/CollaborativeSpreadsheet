@@ -199,15 +199,15 @@ void connect_requested(int user_socket_ID, std::string user_name, std::string sp
                 send_connect(user_socket_ID, 0);
             }
             else
-	    {
+            {
 	        send_connect(user_socket_ID, spreadsheets[spreadsheet_requested]->num_cells());
                 
 		//Send the cells
                 std::map<std::string, std::string>::iterator itCells;
                 for(itCells = spreadsheets[spreadsheet_requested]->get_data_map().begin(); itCells != spreadsheets[spreadsheet_requested]->get_data_map().end(); itCells++)
                 {
-		  //send_cell(user_socket_ID, itCells->first, itCells->second);
-		  send_message(user_socket_ID, "test1\n");
+                    //send_cell(user_socket_ID, itCells->first, itCells->second);
+                    send_message(user_socket_ID, "test1\n");
                 }
             }
         }
@@ -655,7 +655,6 @@ int main(int argc, char* argv[])
 	    file_stream.close();
     } // End loading all spreadsheets from file.
     
-	
     /* Get the address info */
     struct addrinfo hints, *res;
     memset(&hints, 0, sizeof hints); // Clear addrinfo struct
