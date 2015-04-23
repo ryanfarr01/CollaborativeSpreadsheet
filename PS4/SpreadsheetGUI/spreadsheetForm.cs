@@ -470,7 +470,10 @@ namespace SpreadsheetGUI
             hostName = _hostName;
             port = _port;
             int portNum;
-            
+
+            if (socket != null)
+                socket.Close();
+
             if(!Int32.TryParse(port,out portNum))
             {
                 MessageBox.Show("Invalid Port");
@@ -503,7 +506,14 @@ namespace SpreadsheetGUI
 
         private void Error(int errorNumber, string errorMessage)
         {
-            MessageBox.Show(errorMessage);
+            switch (errorNumber) {
+                default: MessageBox.Show(errorMessage); break;
+                case 1: MessageBox.Show("Bad cell change:\n" + errorMessage); break;
+                case 2: MessageBox.Show("Invalid Command:\n" + errorMessage); break;
+                case 3: MessageBox.Show("Unable to perform command in current state:\n" + errorMessage); break;
+                case 4: MessageBox.Show("Invalid username:\n" + errorMessage); break;
+            }
+            
         }
 
         private void InvalidCommand(string badCommand, string explaination)
@@ -531,6 +541,14 @@ namespace SpreadsheetGUI
         private void sendConnect(string s)
         {
             socket.Send(s);
+        }
+
+        private void registerUserToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string register = "register ";
+            register += Microsoft.VisualBasic.Interaction.InputBox("Name of user to register", "Register User", "");
+            if (register != "register ")
+                sendMessage(register);
         }
 
 

@@ -389,6 +389,11 @@ public class SocketHandler
         }
     }
 
+    public void Close()
+    {
+        socket.Close();
+    }
+
     /*
     /// <summary>
     /// A simple main to test the Socket Handler.

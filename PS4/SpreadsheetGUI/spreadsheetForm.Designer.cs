@@ -46,6 +46,7 @@
             this.cellValueField = new System.Windows.Forms.ToolStripLabel();
             this.cellContentsField = new System.Windows.Forms.ToolStripTextBox();
             this.spreadsheetPanel1 = new SS.SpreadsheetPanel();
+            this.registerUserToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -71,6 +72,7 @@
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.newToolStripMenuItem,
             this.openToolStripMenuItem,
+            this.registerUserToolStripMenuItem,
             this.closeToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(77, 20);
@@ -189,6 +191,13 @@
             this.spreadsheetPanel1.TabIndex = 0;
             this.spreadsheetPanel1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.spreadsheetPanel1_KeyDown);
             // 
+            // registerUserToolStripMenuItem
+            // 
+            this.registerUserToolStripMenuItem.Name = "registerUserToolStripMenuItem";
+            this.registerUserToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.registerUserToolStripMenuItem.Text = "Register User";
+            this.registerUserToolStripMenuItem.Click += new System.EventHandler(this.registerUserToolStripMenuItem_Click);
+            // 
             // spreadsheetForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -227,6 +236,7 @@
         private System.Windows.Forms.ToolStripMenuItem selectNewCellToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem testMessageToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem testReceiveToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem registerUserToolStripMenuItem;
     }
 }
 
