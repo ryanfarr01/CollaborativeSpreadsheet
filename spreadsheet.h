@@ -28,6 +28,7 @@ class spreadsheet
   std::map<std::string, std::string> get_data_map();
   int undo(std::string * cell_name, std::string * cell_change);
   void display_contents(); //Note: just for testing
+  int num_cells();
 
  private:
   int has_dependency (std::string c1, std::string c2);

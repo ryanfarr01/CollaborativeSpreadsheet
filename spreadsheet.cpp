@@ -166,6 +166,11 @@ int spreadsheet::undo( std::string * cell_name, std::string * cell_change )
   return 0;
 }
 
+int spreadsheet::num_cells()
+{
+  return data.size();
+}
+
 void spreadsheet::display_contents()
 {
   for(std::map<std::string, std::string>::const_iterator it = data.begin(); it != data.end(); it++)
