@@ -187,7 +187,23 @@ void connect_requested(int user_socket_ID, std::string user_name, std::string sp
                 std::vector<int> temp;
                 temp.push_back(user_socket_ID);
                 spreadsheet_user[spreadsheet_requested] = temp;
-            } 
+            }
+            if(spreadsheets[spreadsheet_requested]->get_data_map().size() == 0)
+            {
+                send_message(user_socket_ID, "connected 0\n");
+            }
+            else{
+                std::string message = "connected ";
+                message += spreadsheets[spreadsheet_requested]->get_data_map().size();
+                message += "\n";
+                send_message(user_socket_ID,message);
+            //Send the cells
+                std::map<std::string, std::string>::iterator itCells;
+            for(itCells = spreadsheets[spreadsheet_requested]->get_data_map().begin(); itCells != spreadsheets[spreadsheet_requested]->get_data_map().end(); itCells++)
+            {
+                send_cell(user_socket_ID, itCells->first, itCells->second);
+            }
+            }
         }
 	//Otherwise, create the spreadsheet
 	else
