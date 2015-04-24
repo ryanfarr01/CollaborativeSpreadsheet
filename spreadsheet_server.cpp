@@ -174,24 +174,12 @@ void connect_requested(int user_socket_ID, std::string user_name, std::string sp
             //associate the socket with the spreadsheet
             user_spreadsheet[user_socket_ID] = spreadsheet_requested;
             
-            //add to spreadsheet_user map
-            std::map<std::string, std::vector<int> >::iterator itOpen;
-            
-
             //If its already open
             if(spreadsheet_user.count(spreadsheet_requested) == 1)
             {
-              
-                for(itOpen = spreadsheet_user.begin(); itOpen != spreadsheet_user.end(); itOpen++)
-                {
-                   
-                    if(itOpen->first == spreadsheet_requested)
-                    {
-                        //Add to the vector
-                        itOpen->second.push_back(user_socket_ID);
-                       
-                    }
-                }
+	      std::vector<int> users = spreadsheet_user[spreadsheet_requested]; 
+	      users.push_back(user_socket_ID);
+	      spreadsheet_user[spreadsheet_requested] = users;
             }
             //Add it to the opened
             else
@@ -200,27 +188,22 @@ void connect_requested(int user_socket_ID, std::string user_name, std::string sp
                 temp.push_back(user_socket_ID);
                 spreadsheet_user[spreadsheet_requested] = temp;
             }
-            if(spreadsheets[spreadsheet_requested]->get_data_map().size() == 0)
-            {
-                //TODO: Fix this
-                send_connect(user_socket_ID, 0);
-            }
-            else
-                
-            {
-                //TODO: SEND CONNECT!
-//                std::string message = "connected ";
-//                message += spreadsheets[spreadsheet_requested]->get_data_map().size();
-//                message += "\n";
-//                send_message(user_socket_ID,message);
+	    
+	    send_connect(user_socket_ID, spreadsheets[spreadsheet_requested]->num_cells());
+
+	    if(spreadsheets[spreadsheet_requested]->num_cells() > 0)
+	    {
                 //Send the cells
-                std::map<std::string, std::string>::iterator itCells;
-                for(itCells = spreadsheets[spreadsheet_requested]->get_data_map().begin(); itCells != spreadsheets[spreadsheet_requested]->get_data_map().end(); itCells++)
+	        std::map<std::string, std::string>::iterator itCells = spreadsheets[spreadsheet_requested]->get_data_map()->begin();
+	        std::cout << "connect 1, size: " << spreadsheets[spreadsheet_requested]->num_cells() << std::endl;
+                for( ; itCells != spreadsheets[spreadsheet_requested]->get_data_map()->end(); ++itCells)
                 {
+	            std::cout << "connect 2" << std::endl;
                     //TODO:Fix this
                     send_cell(user_socket_ID, itCells->first, itCells->second);
-                }
-            }
+	  	    std::cout << "connect 3" << std::endl;
+                }   
+	    }          
         }
         //Otherwise, create the spreadsheet
         else
@@ -228,6 +211,7 @@ void connect_requested(int user_socket_ID, std::string user_name, std::string sp
             std::cout << "Making a new spreadsheet: " << spreadsheet_requested << std::endl;
             
             spreadsheet * s = new spreadsheet(spreadsheet_requested);
+	    send_connect(user_socket_ID, s->num_cells());
             spreadsheets.insert(std::pair<std::string, spreadsheet *>(spreadsheet_requested, s));
             
             std::vector<int> temp;
@@ -235,11 +219,7 @@ void connect_requested(int user_socket_ID, std::string user_name, std::string sp
             spreadsheet_user.insert(std::pair<std::string, std::vector<int> >(spreadsheet_requested, temp));
             user_spreadsheet.insert(std::pair<int, std::string>(user_socket_ID, spreadsheet_requested));
         }
-        
-        
     }
-
-    
     // Otherwise, respond with error 4
     else
         send_error(user_socket_ID, 4, user_name);
@@ -276,7 +256,7 @@ void save_open_spreadsheets(std::string spreadsheet_name)
     ss.open(file_name.c_str());
     
     std::map<std::string, std::string>::iterator itCells;
-    for(itCells = spreadsheets[spreadsheet_name]->get_data_map().begin(); itCells != spreadsheets[spreadsheet_name]->get_data_map().end(); itCells++)
+    for(itCells = spreadsheets[spreadsheet_name]->get_data_map()->begin(); itCells != spreadsheets[spreadsheet_name]->get_data_map()->end(); itCells++)
         
     {
         ss << itCells->first << "="<< itCells->second<< std::endl;
@@ -355,6 +335,31 @@ void change_cell(int user_socket_id, std::string cell_name, std::string new_cell
     std::cout << "in change_cell() with cell name: " << cell_name << ", and contents: " << new_cell_contents << std::endl;
     std::map<int,std::string>::iterator it;
     
+    std::cout << "stage 1" << std::endl;
+    spreadsheet *s;
+    if(user_to_spreadsheet(user_socket_id, s))
+    {
+
+      std::cout << "stage 2" << std::endl;
+      if(s->set_cell(cell_name, new_cell_contents))
+      {
+
+	std::cout << "stage 3" << std::endl;
+	std::vector<int> users = spreadsheet_user[s->get_name()];
+	std::vector<int>::iterator it;
+	for(it = users.begin(); it != users.end(); it++)
+	{
+	  send_cell(*it, cell_name, new_cell_contents);
+	}
+      }
+      else
+      {
+	send_error(user_socket_id, 2, "Circular Dependency");
+      }
+    }
+
+
+    /*
     for(it = user_spreadsheet.begin(); it != user_spreadsheet.end(); it++)
     {
         //Find the spreadsheet name by the socket
@@ -394,7 +399,7 @@ void change_cell(int user_socket_id, std::string cell_name, std::string new_cell
                 }
             }
         }
-    }
+	}*/
   
 }
 
