@@ -36,8 +36,10 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <pthread.h>
 
-//#include <sys/socket.h> // Unnecessary?
-//#include <netinet/in.h> // Unnecessary?
+#include <unistd.h>
+
+#include <sys/socket.h> // Unnecessary?
+#include <netinet/in.h> // Unnecessary?
 //#include <unistd.h> // Unnecessary?
 //#include <signal.h> // Unnecessary?
 
@@ -57,7 +59,6 @@ std::map<int, std::string> user_spreadsheet;
 
 //Map spreadsheet name to all connected users (Theses spreadsheets are open)
 std::map<std::string, std::vector<int> > spreadsheet_user;
-
 
 // Used to send a string through a socket.
 int send_message(int socket_id, std::string string_to_send);
@@ -157,6 +158,7 @@ void register_user(int user_socket_ID, std::string user_name)
 // Handles a client's connection/spreadsheet loading request.
 void connect_requested(int user_socket_ID, std::string user_name, std::string spreadsheet_requested)
 {
+	std::cout << "connect_requested entered" << std::endl;
     // If the username has been registered...
     if (user_list.find(user_name) != user_list.end())
     {
@@ -192,56 +194,60 @@ void connect_requested(int user_socket_ID, std::string user_name, std::string sp
             {
                 send_message(user_socket_ID, "connected 0\n");
             }
-            else{
+            else
+			{
                 std::string message = "connected ";
                 message += spreadsheets[spreadsheet_requested]->get_data_map().size();
                 message += "\n";
                 send_message(user_socket_ID,message);
             //Send the cells
                 std::map<std::string, std::string>::iterator itCells;
-            for(itCells = spreadsheets[spreadsheet_requested]->get_data_map().begin(); itCells != spreadsheets[spreadsheet_requested]->get_data_map().end(); itCells++)
-            {
-                send_cell(user_socket_ID, itCells->first, itCells->second);
-            }
+				for(itCells = spreadsheets[spreadsheet_requested]->get_data_map().begin(); itCells != spreadsheets[spreadsheet_requested]->get_data_map().end(); itCells++)
+				{
+					send_cell(user_socket_ID, itCells->first, itCells->second);
+				}
             }
         }
-	//Otherwise, create the spreadsheet
-	else
-	{
-	  std::cout << "Making a new spreadsheet: " << spreadsheet_requested << std::endl;
+		//Otherwise, create the spreadsheet
+		else
+		{
+		std::cout << "Making a new spreadsheet: " << spreadsheet_requested << std::endl;
 
-	  //Create spreadsheet
-	  //add it to the spreadsheet_user map
-	  //add to the spreadsheets map
-	  //add to user_spreadsheet map
-	  spreadsheet * s = new spreadsheet(spreadsheet_requested);
-	  spreadsheets.insert(std::pair<std::string, spreadsheet *>(spreadsheet_requested, s));
+		spreadsheet * s = new spreadsheet(spreadsheet_requested);
+		spreadsheets.insert(std::pair<std::string, spreadsheet *>(spreadsheet_requested, s));
 
-	  std::vector<int> temp;
-	  temp.push_back(user_socket_ID);
-	  spreadsheet_user.insert(std::pair<std::string, std::vector<int> >(spreadsheet_requested, temp));
-	  user_spreadsheet.insert(std::pair<int, std::string>(user_socket_ID, spreadsheet_requested));
-	}
+		std::vector<int> temp;
+		temp.push_back(user_socket_ID);
+		spreadsheet_user.insert(std::pair<std::string, std::vector<int> >(spreadsheet_requested, temp));
+		user_spreadsheet.insert(std::pair<int, std::string>(user_socket_ID, spreadsheet_requested));
+		}
     }
     // Otherwise, respond with error 4
     else
         send_error(user_socket_ID, 4, user_name);
 
+	std::cout << "connect_requested exited" << std::endl;
 }//End connect_requested()
 
 
 //Save all of the spreadsheet names to a file. Read on server launch
 void save_spreadsheet_names(std::string spreadsheet_name)
 {
+	std::cout << "save_spreadsheet_names entered" << std::endl;
+
     std::ofstream ss_names;
     ss_names.open("spreadsheets.axis", std::ios_base::app); // This is needed so the file doesnt get overwritten
     ss_names << spreadsheet_name << std::endl;
     ss_names.close();
+	
+	std::cout << "save_spreadsheet_names exited" << std::endl;
 }
 
 //Save all spreadsheets contents on server. Read on server launch
 void *save_open_spreadsheets(void*)
 {
+	std::cout << "save_open_spreadsheets entered" << std::endl;
+
     while(1)
     {
         //Get the open spreadsheets
@@ -283,11 +289,14 @@ void *save_open_spreadsheets(void*)
             ss.close(); 
         }
     }
+	std::cout << "save_open_spreadsheets exited" << std::endl;
 }
 
 // Saves the user_list map to file.  Will be read upon next server launch.
 void save_user_list()
 {
+	std::cout << "save_user_list entered" << std::endl;
+
     // Create/open the file.
     std::ofstream user_list_file;
     user_list_file.open("users.axis", std::ios_base::app); // This is needed so the file doesnt get overwritten
@@ -301,13 +310,15 @@ void save_user_list()
     
     // Close the file
     user_list_file.close();
+
+	std::cout << "save_user_list exited" << std::endl;
 } // End save_user_list()
 
 
 //Change the requested cell
 void change_cell(int user_socket_id, std::string cell_name, std::string new_cell_contents)
 {
-  std::cout << "in change_cell() with cell name: " << cell_name << ", and contents: " << new_cell_contents << std::endl;
+    std::cout << "in change_cell() with cell name: " << cell_name << ", and contents: " << new_cell_contents << std::endl;
     std::map<int,std::string>::iterator it;
     
     for(it = user_spreadsheet.begin(); it != user_spreadsheet.end(); it++)
@@ -349,11 +360,12 @@ void change_cell(int user_socket_id, std::string cell_name, std::string new_cell
             }
         }
     }
+	std::cout << "checnge_cell entered" << std::endl;
 }
 
 void undo(int socket_id)
 {
-  std::cout << "In undo" << std::endl;
+	std::cout << "In undo" << std::endl;
   //Find the spreadsheet
   //Call undo on spreadsheet
   //Send the cell change to all other users on the spreadsheet
@@ -372,11 +384,15 @@ void undo(int socket_id)
       }
     }
   }
+ 	std::cout << "undo exited" << std::endl;
+
 }
 
 // Used to send a string through a socket.
 int send_message(int socket_id, std::string string_to_send)
 {
+	std::cout << "send_message entered" << std::endl;
+
     // If socket_id is 0, we don't want to send the message.
     //   (It's the server sending an error to itself as though it's a client)
     if (socket_id == 0)
@@ -395,6 +411,8 @@ int send_message(int socket_id, std::string string_to_send)
     
     // Return 0 to signal success.
     return 0;
+	
+	std::cout << "send_message exited" << std::endl;
 } // end send_message()
 
 
@@ -446,6 +464,8 @@ void message_received(int socket_id, std::string & line_received)
     // Echos the message back to the sender.
     std::string my_string = "Echo: " + line_received + "\n";
     send_message(socket_id, my_string);
+
+	std::cout << "message_received exited" << std::endl;
 }// End message_received()
 
 
@@ -456,6 +476,8 @@ void message_received(int socket_id, std::string & line_received)
 // Splits a string message into its space-separated components.
 void split_message(std::string message, std::vector<std::string> & ret)
 {
+	std::cout << "message_received entered" << std::endl;
+
     if(message[message.size()-1] == '\r')
       message = message.substr(0, message.size()-1);
 
@@ -473,6 +495,8 @@ void split_message(std::string message, std::vector<std::string> & ret)
     }
     
     ret.push_back(message.substr(pos_init, std::min(pos, static_cast<int>(message.size())) - pos_init));
+	
+	std::cout << "message_received exited" << std::endl;
 }// End split_message()
 
 
@@ -492,8 +516,10 @@ void client_disconnected(int socket_id)
 
 // Handler (event) fired for each new socket.
 // Invoked in a forked thread as soon as the socket is paired.
-void handle(int newsock)
+void *handle(void *pnewsock)
 {
+	int newsock = *(int*)pnewsock; // Cast to string identifier of the socket
+	
     // This string will be populated with what we receive from the socket, and full lines
     //   (terminated by '\n' characters) will be removed from the front as they arrive.
     std::string received_so_far = "";
@@ -506,25 +532,30 @@ void handle(int newsock)
         // Receive more data from the socket:
         // Create the buffer we'll populate with the received messages.
         char incoming_data_buffer[INCOMING_BUFFER_SIZE];
+						
         // Wait for a message to be received. This code will block until we receive something.
-        ssize_t bytes_received = recv(newsock, incoming_data_buffer, INCOMING_BUFFER_SIZE, 0);
+        ssize_t bytes_received = recv(newsock, incoming_data_buffer, INCOMING_BUFFER_SIZE-1, 0);
+		
         // If the client has shut down, call the client disconnection cleanup function, and return.
         if (bytes_received == 0) {
             client_disconnected(newsock);
-            return;
+            return NULL;
         }
+
         // If we failed to receive properly, send an error to the error stream, and return.
         if (bytes_received == -1) {
             perror("handle()'s message reception failed");
-            return;
+            return NULL;
         }
+
         // Terminates the received character array properly. (May not be needed?).
         if (bytes_received != INCOMING_BUFFER_SIZE)
             incoming_data_buffer[bytes_received] = '\0';
-        
+			
         // Get a string representation of what we've just received from the socket.
         std::string received_data(incoming_data_buffer);
-        // Add what we've just received to the received_so_far string.
+  
+		// Add what we've just received to the received_so_far string.
         received_so_far += received_data;
         
         // While we have newline characters, strip the lines one by one and pass them to message_received().
@@ -543,6 +574,8 @@ void handle(int newsock)
             message_received(newsock, current_line);
         } // End newline detection loop
     } // End infinite receive/newline detection loop
+	
+	return NULL;
 } // End handle()
 
 
@@ -598,8 +631,8 @@ int main(int argc, char* argv[])
 //    std::thread save_thread(save_open_spreadsheets);
 //    save_thread.join();
     
-    pthread_t save_thread;
-    pthread_create(&save_thread, NULL, &save_open_spreadsheets, NULL);
+    //pthread_t save_thread;
+    //pthread_create(&save_thread, NULL, &save_open_spreadsheets, NULL);
     //pthread_join(save_thread, NULL);
 
 
@@ -666,7 +699,6 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    
     /* Create the socket */
     int sock = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
     if (sock == -1) {
@@ -697,51 +729,30 @@ int main(int argc, char* argv[])
     freeaddrinfo(res);
     
     /* Set up the signal (event) handler */
-    struct sigaction sa;
+    /*struct sigaction sa;
     sa.sa_handler = wait_for_child;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = SA_RESTART;
     if (sigaction(SIGCHLD, &sa, NULL) == -1) {
         perror("sigaction");
         return 1;
-    }
+    }*/
     
 
     /* Main loop */
-    /* Pairs sockets, launches forked process for each newly paired socket */
+    /* Pairs sockets, launches a new thread for each newly paired socket */
+	pthread_t thread;
     while (1){
-
-        // Create structures necessary for socket acceptance.
+        size_t size = sizeof(struct sockaddr_in);
         struct sockaddr_in their_addr;
-        socklen_t size = sizeof(struct sockaddr_in);
-        // Get int identifier for new socket, and create new socket for connecting client.
-        int newsock = accept(sock, (struct sockaddr*)&their_addr, &size);
-        
-        // Announce if we encounter an error.
+        int newsock = accept(sock, (struct sockaddr*)&their_addr, (socklen_t*)&size);
         if (newsock == -1) {
             perror("accept");
-            return 0;
-        }
-        
-        // Print connection announcement to console.
-        printf("Got a connection from %s on port %d\n", inet_ntoa(their_addr.sin_addr), htons(their_addr.sin_port));
-        
-        // Fork.  Create new thread for the new socket.
-        int pid = fork();
-        if (pid == 0) {
-            /* In child process */
-            close(sock);
-            handle(newsock);
-            return 0;
         }
         else {
-            /* Parent process */
-            if (pid == -1) {
-                perror("fork");
-                return 1;
-            }
-            else {
-                close(newsock);
+            printf("Got a connection from %s on port %d\n", inet_ntoa(their_addr.sin_addr), htons(their_addr.sin_port));
+            if (pthread_create(&thread, NULL, handle, &newsock) != 0) {
+                fprintf(stderr, "Failed to create thread\n");
             }
         }
     }
