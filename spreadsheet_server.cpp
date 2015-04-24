@@ -73,7 +73,7 @@ void register_user(int user_socket_ID, std::string user_name);
 void save_user_list();
 
 //Save the current spreadsheets contents
-void save_open_spreadsheets();
+void save_open_spreadsheets(std::string);
 
 //Save the current spreadsheets contents
 void save_spreadsheet_names();
@@ -85,21 +85,27 @@ void connect_requested(int user_socket_ID, std::string user_name, std::string sp
 void change_cell(int user_socket_id, std::string cell_name, std::string new_cell_contents);
 
 //Send connect command
-void send_connect(int socket_id, int count);
+void send_connect(const int socket_id, const int count);
 
 //Send cell changes
-void send_cell(int socket_id, std::string cellName, std::string cellContents);
+void send_cell(const int socket_id, const std::string cellName, const std::string cellContents);
 
 //Send error
 void send_error(int socket_id, int error_id, std::string context);
 
-void send_connect(int socket_id, int count)
+void send_connect(const int socket_id, const int count)
 {
-    send_message(socket_id, std::string("connected " + count + '\n'));
+    std::cout << "in send_connect" << std::endl;
+    std::string message = "connected ";
+    std::stringstream ss;
+    ss << count;
+    message += ss.str();
+    message += '\n';
+    send_message(socket_id, message);
 }
 
 //Send cell
-void send_cell(int socket_id, std::string cellName, std::string cellContents)
+void send_cell(const int socket_id, const std::string cellName, const std::string cellContents)
 {
     send_message(socket_id, std::string("cell " + cellName + " " + cellContents + '\n'));
 }
@@ -115,17 +121,17 @@ void send_error(int socket_id, int error_id, std::string context)
 //Take in a socket ID and put the spreadsheet pointer associated. Returns 0 if it didn't work, 1 if it did
 int user_to_spreadsheet(int user, spreadsheet *s)
 {
-  if(user_spreadsheet.count(user) != 0)
-  {
-    std::string spreadsheet_name = user_spreadsheet[user];
-    if(spreadsheets.count(spreadsheet_name) != 0)
+    if(user_spreadsheet.count(user) != 0)
     {
-      s = spreadsheets[spreadsheet_name];
-      return 1;
+        std::string spreadsheet_name = user_spreadsheet[user];
+        if(spreadsheets.count(spreadsheet_name) != 0)
+        {
+            s = spreadsheets[spreadsheet_name];
+            return 1;
+        }
     }
-  }
-
-  return 0;
+    
+    return 0;
 }
 
 // Signal handler to reap zombie processes
@@ -192,9 +198,10 @@ void connect_requested(int user_socket_ID, std::string user_name, std::string sp
             }
             if(spreadsheets[spreadsheet_requested]->get_data_map().size() == 0)
             {
-                send_message(user_socket_ID, "connected 0\n");
+                send_connect(user_socket_ID, 0);
             }
             else
+<<<<<<< HEAD
 			{
                 std::string message = "connected ";
                 message += spreadsheets[spreadsheet_requested]->get_data_map().size();
@@ -221,12 +228,49 @@ void connect_requested(int user_socket_ID, std::string user_name, std::string sp
 		spreadsheet_user.insert(std::pair<std::string, std::vector<int> >(spreadsheet_requested, temp));
 		user_spreadsheet.insert(std::pair<int, std::string>(user_socket_ID, spreadsheet_requested));
 		}
+=======
+                
+                send_connect(user_socket_ID, spreadsheets[spreadsheet_requested]->num_cells());
+            
+            //Send the cells
+            std::map<std::string, std::string>::iterator itCells;
+            for(itCells = spreadsheets[spreadsheet_requested]->get_data_map().begin(); itCells != spreadsheets[spreadsheet_requested]->get_data_map().end(); itCells++)
+            {
+                //send_cell(user_socket_ID, itCells->first, itCells->second);
+                send_message(user_socket_ID, "test1\n");
+            }
+        }
+        
+        //Otherwise, create the spreadsheet
+        else
+        {
+            std::cout << "Making a new spreadsheet: " << spreadsheet_requested << std::endl;
+            
+            //Create spreadsheet
+            //add it to the spreadsheet_user map
+            //add to the spreadsheets map
+            //add to user_spreadsheet map
+            spreadsheet * s = new spreadsheet(spreadsheet_requested);
+            send_connect(user_socket_ID, s->num_cells());
+            spreadsheets.insert(std::pair<std::string, spreadsheet *>(spreadsheet_requested, s));
+            
+            std::vector<int> temp;
+            temp.push_back(user_socket_ID);
+            spreadsheet_user.insert(std::pair<std::string, std::vector<int> >(spreadsheet_requested, temp));
+            user_spreadsheet.insert(std::pair<int, std::string>(user_socket_ID, spreadsheet_requested));
+        }
+>>>>>>> origin/master
     }
+    
     // Otherwise, respond with error 4
     else
         send_error(user_socket_ID, 4, user_name);
+<<<<<<< HEAD
 
 	std::cout << "connect_requested exited" << std::endl;
+=======
+    
+>>>>>>> origin/master
 }//End connect_requested()
 
 
@@ -244,52 +288,74 @@ void save_spreadsheet_names(std::string spreadsheet_name)
 }
 
 //Save all spreadsheets contents on server. Read on server launch
-void *save_open_spreadsheets(void*)
+void save_open_spreadsheets(std::string spreadsheet_name)
 {
+<<<<<<< HEAD
 	std::cout << "save_open_spreadsheets entered" << std::endl;
 
     while(1)
+=======
+    std::cout<<"in save"<<spreadsheet_name<<std::endl;
+    
+    //Create the file name
+    std::string file_name = spreadsheet_name;
+    file_name += ".axis";
+    std::ofstream ss;
+    //Open the file
+    ss.open(file_name.c_str());
+    
+    std::map<std::string, std::string>::iterator itCells;
+    for(itCells = spreadsheets[spreadsheet_name]->get_data_map().begin(); itCells != spreadsheets[spreadsheet_name]->get_data_map().end(); itCells++)
+>>>>>>> origin/master
     {
-        //Get the open spreadsheets
-        std::map<std::string, std::vector<int> >::iterator itOpen;
-        
-        for (itOpen = spreadsheet_user.begin(); itOpen != spreadsheet_user.end(); itOpen++)
-        {
-            //Create the file name
-            std::string file_name = itOpen->first;
-            file_name += ".axis";
-            //Get the data from the spreadsheet
-            //std::map<std::string, std::string>::iterator data_it;
-            std::ofstream ss;
-            //Open the file
-            ss.open(file_name.c_str());
-            
-            //get the open from the spreadsheet from the master map
-            std::map<std::string, spreadsheet*>::iterator itMaster;
-            for(itMaster = spreadsheets.begin(); itMaster != spreadsheets.end(); itMaster++)
-            {
-                //Save every three seconds
-                boost::asio::io_service io;
-                
-                boost::asio::deadline_timer t(io, boost::posix_time::seconds(3));
-                
-                t.wait();
-                //Find the open ones
-                if(itOpen->first == itMaster->first)
-                {
-                    std::map<std::string, std::string>::iterator data_it;
-                    
-                    //Get all the cells and save them
-                    for(data_it = itMaster->second->get_data_map().begin(); data_it != itMaster->second->get_data_map().end(); data_it++)
-                    {
-                        ss << data_it->first << "="<< data_it->second<< std::endl;
-                    }
-                }
-            }
-            ss.close(); 
-        }
+        ss << itCells->first << "="<< itCells->second<< std::endl;
     }
+<<<<<<< HEAD
 	std::cout << "save_open_spreadsheets exited" << std::endl;
+=======
+    ss.close();
+    //    while(1)
+    //    {
+    //        //Get the open spreadsheets
+    //        std::map<std::string, std::vector<int> >::iterator itOpen;
+    //
+    //        for (itOpen = spreadsheet_user.begin(); itOpen != spreadsheet_user.end(); itOpen++)
+    //        {
+    //            //Create the file name
+    //            std::string file_name = itOpen->first;
+    //            file_name += ".axis";
+    //            //Get the data from the spreadsheet
+    //            //std::map<std::string, std::string>::iterator data_it;
+    //            std::ofstream ss;
+    //            //Open the file
+    //            ss.open(file_name.c_str());
+    //
+    //            //get the open from the spreadsheet from the master map
+    //            std::map<std::string, spreadsheet*>::iterator itMaster;
+    //            for(itMaster = spreadsheets.begin(); itMaster != spreadsheets.end(); itMaster++)
+    //            {
+    //                //Save every three seconds
+    //                boost::asio::io_service io;
+    //
+    //                boost::asio::deadline_timer t(io, boost::posix_time::seconds(3));
+    //
+    //                t.wait();
+    //                //Find the open ones
+    //                if(itOpen->first == itMaster->first)
+    //                {
+    //                    std::map<std::string, std::string>::iterator data_it;
+    //
+    //                    //Get all the cells and save them
+    //                    for(data_it = itMaster->second->get_data_map().begin(); data_it != itMaster->second->get_data_map().end(); data_it++)
+    //                    {
+    //                        ss << data_it->first << "="<< data_it->second<< std::endl;
+    //                    }
+    //                }
+    //            }
+    //            ss.close();
+    //        }
+    //    }
+>>>>>>> origin/master
 }
 
 // Saves the user_list map to file.  Will be read upon next server launch.
@@ -350,6 +416,7 @@ void change_cell(int user_socket_id, std::string cell_name, std::string new_cell
                                 }
                             }
                         }
+                        save_open_spreadsheets(itMaster->first);
                     }
                     //returns 0. Send error
                     else
@@ -365,6 +432,7 @@ void change_cell(int user_socket_id, std::string cell_name, std::string new_cell
 
 void undo(int socket_id)
 {
+<<<<<<< HEAD
 	std::cout << "In undo" << std::endl;
   //Find the spreadsheet
   //Call undo on spreadsheet
@@ -374,18 +442,33 @@ void undo(int socket_id)
   {
     std::string cell, contents;
     if(s->undo(&cell, &contents))
+=======
+    std::cout << "In undo" << std::endl;
+    //Find the spreadsheet
+    //Call undo on spreadsheet
+    //Send the cell change to all other users on the spreadsheet
+    spreadsheet *s;
+    if(user_to_spreadsheet(socket_id, s))
+>>>>>>> origin/master
     {
-      std::vector<int> users = spreadsheet_user[s->get_name()];
-      std::vector<int>::iterator it;
-
-      for(it = users.begin(); it != users.end(); it++)
-      {
-	send_cell(*it, cell, contents);
-      }
+        std::string cell, contents;
+        if(s->undo(&cell, &contents))
+        {
+            std::vector<int> users = spreadsheet_user[s->get_name()];
+            std::vector<int>::iterator it;
+            
+            for(it = users.begin(); it != users.end(); it++)
+            {
+                send_cell(*it, cell, contents);
+            }
+        }
     }
+<<<<<<< HEAD
   }
  	std::cout << "undo exited" << std::endl;
 
+=======
+>>>>>>> origin/master
 }
 
 // Used to send a string through a socket.
@@ -397,7 +480,7 @@ int send_message(int socket_id, std::string string_to_send)
     //   (It's the server sending an error to itself as though it's a client)
     if (socket_id == 0)
         return 1;
-
+    
     // Send the message across the socket.
     const char * message = string_to_send.c_str();
     int length = strlen(message);
@@ -430,7 +513,7 @@ void message_received(int socket_id, std::string & line_received)
     std::cout << "In pieces:" << std::endl;
     for(std::vector<std::string>::iterator it = command.begin(); it != command.end(); ++it)
     {
-      std::cout << *it << std::endl;
+        std::cout << *it << std::endl;
     }
     
     // Call the appropriate functions for the received command.
@@ -443,22 +526,22 @@ void message_received(int socket_id, std::string & line_received)
     else if (command.at(0) == "cell")
     {
         std::string cell_name, cell_contents = "";
-	std::vector<std::string>::iterator it = command.begin();
-	it++;
-	cell_name = *it;
-	it++;
-	
-	for( ; it != command.end(); it++)
-	{
-	  cell_contents += *it + " ";
-	}
-	
+        std::vector<std::string>::iterator it = command.begin();
+        it++;
+        cell_name = *it;
+        it++;
+        
+        for( ; it != command.end(); it++)
+        {
+            cell_contents += *it + " ";
+        }
+        
         change_cell(socket_id, cell_name, cell_contents);
     }
     else if (command.at(0) == "undo")
     {
-      std::cout << "In undo else-if" << std::endl;
-      undo(socket_id);
+        std::cout << "In undo else-if" << std::endl;
+        undo(socket_id);
     }
 	   
     // Echos the message back to the sender.
@@ -479,8 +562,8 @@ void split_message(std::string message, std::vector<std::string> & ret)
 	std::cout << "message_received entered" << std::endl;
 
     if(message[message.size()-1] == '\r')
-      message = message.substr(0, message.size()-1);
-
+        message = message.substr(0, message.size()-1);
+    
     ret.clear();
     int pos = message.find(' ');
     int pos_init = 0;
@@ -583,10 +666,10 @@ void *handle(void *pnewsock)
 //   launches a callback handle in a forked thread for each.
 int main(int argc, char* argv[])
 {
-	// Holds the port number we're going to host on.   Default to port 2000 as per protocol specification.
-	std::string port = "2117";
-
-	// If we have exactly one argument, make it our host port.
+    // Holds the port number we're going to host on.   Default to port 2000 as per protocol specification.
+    std::string port = "2117";
+    
+    // If we have exactly one argument, make it our host port.
     if (argc == 2){
         port = argv[1]; //  Port value assigned here.
         
@@ -597,7 +680,7 @@ int main(int argc, char* argv[])
         }
     }
     
-
+    
     // Load the list of registered users, or create one if none exists.
     // Check if file exists.
     FILE * user_list_file = fopen("users.axis", "r");
@@ -606,54 +689,58 @@ int main(int argc, char* argv[])
     
     // If the users.axis file exists, add its users to the user_list.
     if (exists)
-
-	{
-		std::ifstream file_stream("users.axis");
-		std::string txt;
-	    
-		if (file_stream.is_open())
-			while (file_stream.good())
-			{
-				getline(file_stream, txt);
-				user_list.insert(std::make_pair(std::string(txt), true));
-			}
-		file_stream.close();		
-	}
-	// Otherwise, create it.
+        
+    {
+        std::ifstream file_stream("users.axis");
+        std::string txt;
+        
+        if (file_stream.is_open())
+            while (file_stream.good())
+            {
+                getline(file_stream, txt);
+                user_list.insert(std::make_pair(std::string(txt), true));
+            }
+        file_stream.close();
+    }
+    // Otherwise, create it.
     else
     {
         user_list.insert(std::make_pair(std::string("sysadmin"), true));
         save_user_list();
     }
-
-
-    //Start the save thread
-//    std::thread save_thread(save_open_spreadsheets);
-//    save_thread.join();
     
+    
+    //Start the save thread
+    //pthread_t save_thread;
+    //pthread_create(&save_thread, NULL, &save_open_spreadsheets, NULL);
+    
+    
+<<<<<<< HEAD
     //pthread_t save_thread;
     //pthread_create(&save_thread, NULL, &save_open_spreadsheets, NULL);
     //pthread_join(save_thread, NULL);
 
 
 
+=======
+>>>>>>> origin/master
     // Begin loading all spreadsheets from file:
     // Check if file containing list of existing spreadsheets exists.
     FILE * sheet_list_file = fopen("spreadsheets.axis", "r");
-	bool sheets_file_exists = (sheet_list_file == NULL) ? false : true;
-	if (sheets_file_exists) fclose(sheet_list_file);
+    bool sheets_file_exists = (sheet_list_file == NULL) ? false : true;
+    if (sheets_file_exists) fclose(sheet_list_file);
     
-
+    
     if (sheets_file_exists) // If the file exists...
     {
         // Open the existing spreadsheet names file.
         std::ifstream file_stream("spreadsheets.axis");
-		std::string txt;
-		if (file_stream.is_open())
+        std::string txt;
+        if (file_stream.is_open())
             // For each spreadsheet name in the file...
-			while (file_stream.good())
-			{
-				getline(file_stream, txt);
+            while (file_stream.good())
+            {
+                getline(file_stream, txt);
                 
                 // If there exists a file with this name...
                 FILE * sheet_file = fopen("spreadsheets.axis", "r");
@@ -661,7 +748,7 @@ int main(int argc, char* argv[])
                 if (file_exists)
                 {
                     fclose(sheet_file);
-                
+                    
                     // Open the file with this spreadsheet's name...
                     std::ifstream current_file_stream((txt+".axis").c_str());
                     std::string current_line;
@@ -676,17 +763,17 @@ int main(int argc, char* argv[])
                             int equals_index = current_line.find('=');
                             cell_name = current_line.substr(0, equals_index);
                             cell_contents = current_line.substr(equals_index+1, current_line.length()-(equals_index-1));
-
+                            
                             // Set the cell to what we just read from the file.
                             change_cell(0,cell_name,cell_contents);
                         }
                     current_file_stream.close();
                 }
-	    }
-	    file_stream.close();
+            }
+        file_stream.close();
     } // End loading all spreadsheets from file.
     
-	
+    
     /* Get the address info */
     struct addrinfo hints, *res;
     memset(&hints, 0, sizeof hints); // Clear addrinfo struct
@@ -698,7 +785,12 @@ int main(int argc, char* argv[])
         perror("getaddrinfo"); // Error if getaddrinfo failed
         return 1;
     }
+<<<<<<< HEAD
 
+=======
+    
+    
+>>>>>>> origin/master
     /* Create the socket */
     int sock = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
     if (sock == -1) {
@@ -738,12 +830,17 @@ int main(int argc, char* argv[])
         return 1;
     }*/
     
-
+    
     /* Main loop */
     /* Pairs sockets, launches a new thread for each newly paired socket */
 	pthread_t thread;
     while (1){
+<<<<<<< HEAD
         size_t size = sizeof(struct sockaddr_in);
+=======
+        
+        // Create structures necessary for socket acceptance.
+>>>>>>> origin/master
         struct sockaddr_in their_addr;
         int newsock = accept(sock, (struct sockaddr*)&their_addr, (socklen_t*)&size);
         if (newsock == -1) {
