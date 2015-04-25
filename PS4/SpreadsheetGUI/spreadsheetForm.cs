@@ -487,6 +487,7 @@ namespace SpreadsheetGUI
             if (socket != null)
             {
                 socket = null;
+                socket.Close();
             }
 
             if(!Int32.TryParse(port,out portNum))
