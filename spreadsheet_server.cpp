@@ -11,37 +11,27 @@
  *   communicating with clients via sockets.
  */
 
-/*
- *  Threaded server implementation adapted from Martin Broadhurst's
- *     implementation:  http://martinbroadhurst.com/server-examples.html
- *
- *  Code utilizes the Berkely sockets API
- */
-
  
+#include <arpa/inet.h> // inet_ntoa
 #include <algorithm> // remove()
+#include <boost/asio.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <fstream> // File I/O
 #include <iostream> // console I/O
+#include <map>
+#include <mutex>
+#include <netdb.h> // addrinfo/getaddrinfo
+#include <netinet/in.h> // Unnecessary?
+#include <pthread.h>
+#include <sstream>
 #include <stdio.h> // perror error message printing
 #include <string> // std::strings
 #include <string.h> // memset(), strlen
-#include <arpa/inet.h> // inet_ntoa
-#include <sys/wait.h> // wait_for_child zombie reclamation requrement
-#include <vector>
-#include <map>
-#include <sstream>
-#include <netdb.h> // addrinfo/getaddrinfo
-#include "spreadsheet.h"
-#include <boost/asio.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <pthread.h>
-
-#include <unistd.h>
-
 #include <sys/socket.h> // Unnecessary?
-#include <netinet/in.h> // Unnecessary?
-//#include <unistd.h> // Unnecessary?
-//#include <signal.h> // Unnecessary?
+#include <thread>
+#include <unistd.h>
+#include <vector>
+#include "spreadsheet.h"
 
 
 #define BACKLOG 10  // Max number of queued users waiting to connect
@@ -59,6 +49,10 @@ std::map<int, std::string> user_spreadsheet;
 
 //Map spreadsheet name to all connected users (Theses spreadsheets are open)
 std::map<std::string, std::vector<int> > spreadsheet_user;
+
+// Locks shared resources between threads.
+std::mutex godlock;
+
 
 // Used to send a string through a socket.
 int send_message(int socket_id, std::string string_to_send);
@@ -125,7 +119,7 @@ int user_to_spreadsheet(int user, spreadsheet **s)
         std::string spreadsheet_name = user_spreadsheet[user];
         if(spreadsheets.count(spreadsheet_name) != 0)
         {
-	    (*s) = spreadsheets[spreadsheet_name];
+            (*s) = spreadsheets[spreadsheet_name];
             return 1;
         }
     }
@@ -149,10 +143,15 @@ void register_user(int user_socket_ID, std::string user_name)
       user_names << user_name << std::endl;
       user_names.close();
     }
+    else
+    {   
+        // Username already exists.  Send error 4.
+        send_error(user_socket_ID, 4, user_name);
+    }
   }
   else
   {
-    send_error(user_socket_ID, 4, user_name);
+    send_error(user_socket_ID, 3, "Must be logged in to register a new user.");
   }
 }// End register_user()
 
@@ -199,18 +198,18 @@ void connect_requested(int user_socket_ID, std::string user_name, std::string sp
                 spreadsheet_user[spreadsheet_requested] = temp;
             }
 	    
-	    send_connect(user_socket_ID, spreadsheets[spreadsheet_requested]->num_cells());
+            send_connect(user_socket_ID, spreadsheets[spreadsheet_requested]->num_cells());
 
-	    if(spreadsheets[spreadsheet_requested]->num_cells() > 0)
-	    {
+            if(spreadsheets[spreadsheet_requested]->num_cells() > 0)
+            {
                 //Send the cells
-	        std::map<std::string, std::string>::iterator itCells = spreadsheets[spreadsheet_requested]->get_data_map()->begin();
+                std::map<std::string, std::string>::iterator itCells = spreadsheets[spreadsheet_requested]->get_data_map()->begin();
                 for( ; itCells != spreadsheets[spreadsheet_requested]->get_data_map()->end(); ++itCells)
                 {
                     //TODO:Fix this
                     send_cell(user_socket_ID, itCells->first, itCells->second);
                 }   
-	    }          
+            }          
         }
         //Otherwise, create the spreadsheet
         else
@@ -231,9 +230,6 @@ void connect_requested(int user_socket_ID, std::string user_name, std::string sp
     // Otherwise, respond with error 4
     else
         send_error(user_socket_ID, 4, user_name);
-    
-
-    
 }//End connect_requested()
 
 
@@ -264,47 +260,6 @@ void save_open_spreadsheets(std::string spreadsheet_name)
     }
     
     ss.close();
-    //    while(1)
-    //    {
-    //        //Get the open spreadsheets
-    //        std::map<std::string, std::vector<int> >::iterator itOpen;
-    //
-    //        for (itOpen = spreadsheet_user.begin(); itOpen != spreadsheet_user.end(); itOpen++)
-    //        {
-    //            //Create the file name
-    //            std::string file_name = itOpen->first;
-    //            file_name += ".axissheet";
-    //            //Get the data from the spreadsheet
-    //            //std::map<std::string, std::string>::iterator data_it;
-    //            std::ofstream ss;
-    //            //Open the file
-    //            ss.open(file_name.c_str());
-    //
-    //            //get the open from the spreadsheet from the master map
-    //            std::map<std::string, spreadsheet*>::iterator itMaster;
-    //            for(itMaster = spreadsheets.begin(); itMaster != spreadsheets.end(); itMaster++)
-    //            {
-    //                //Save every three seconds
-    //                boost::asio::io_service io;
-    //
-    //                boost::asio::deadline_timer t(io, boost::posix_time::seconds(3));
-    //
-    //                t.wait();
-    //                //Find the open ones
-    //                if(itOpen->first == itMaster->first)
-    //                {
-    //                    std::map<std::string, std::string>::iterator data_it;
-    //
-    //                    //Get all the cells and save them
-    //                    for(data_it = itMaster->second->get_data_map().begin(); data_it != itMaster->second->get_data_map().end(); data_it++)
-    //                    {
-    //                        ss << data_it->first << "="<< data_it->second<< std::endl;
-    //                    }
-    //                }
-    //            }
-    //            ss.close();
-    //        }
-    //    }
 }
 
 //Change the requested cell
@@ -312,24 +267,29 @@ void change_cell(int user_socket_id, std::string cell_name, std::string new_cell
 {
     std::cout << "in change_cell() with cell name: " << cell_name << ", and contents: " << new_cell_contents << std::endl;
     std::map<int,std::string>::iterator it;
-    
+
     spreadsheet *s;
     if(user_to_spreadsheet(user_socket_id, &s))
     {
-      if(s->set_cell(cell_name, new_cell_contents))
-      {
-	std::vector<int> users = spreadsheet_user[s->get_name()];
-	std::vector<int>::iterator it;
-	for(it = users.begin(); it != users.end(); it++)
-	{
-	  send_cell(*it, cell_name, new_cell_contents);
-	}
-	save_open_spreadsheets(s->get_name());
-      }
-      else
-      {
-	send_error(user_socket_id, 2, "Circular Dependency");
-      }
+        if(s->set_cell(cell_name, new_cell_contents))
+        {
+            std::vector<int> users = spreadsheet_user[s->get_name()];
+            std::vector<int>::iterator it;
+            for(it = users.begin(); it != users.end(); it++)
+            {
+                send_cell(*it, cell_name, new_cell_contents);
+            }
+            save_open_spreadsheets(s->get_name());
+        }
+        else
+        {
+            send_error(user_socket_id, 2, "Circular Dependency");
+        }
+    }
+    else
+    {
+        // Failed to match user to aa spreadsheet. Send error 3.
+        send_error(user_socket_id, 3, "User not logged in.");
     }
 }
 
@@ -351,9 +311,14 @@ void undo(int socket_id)
             {
                 send_cell(*it, cell, contents);
             }
+            save_open_spreadsheets(s->get_name());
         }
     }
-    
+    else
+    {
+        // Failed to match user to aa spreadsheet. Send error 3.
+        send_error(socket_id, 3, "User not logged in.");
+    }
 }
 
 // Used to send a string through a socket.
@@ -378,7 +343,6 @@ int send_message(int socket_id, std::string string_to_send)
     // Return 0 to signal success.
     return 0;
     
- 
 } // end send_message()
 
 
@@ -392,59 +356,82 @@ void message_received(int socket_id, std::string & line_received)
     
     std::vector<std::string> command;
     split_message(line_received, command);
-        
+
     // Call the appropriate functions for the received command.
-    // NOTE: THIS IS ROUGH CODE AND IS NOT INTENDED TO BE NOT ERROR-PROOF.
-    //		MUST DETECT ERRORS AS PER THE PROTOCOL.
     if (command.at(0) == "connect")
     {
-        std::string spreadsheet_name = "";
-        std::vector<std::string>::iterator it = command.begin();
-        it += 2;
-        
-         // Continue adding all tokens until the end of the line to the final parameter
-       for( ; it != command.end(); it++)
+        if (command.size() > 2)
         {
-	  spreadsheet_name += *it + " ";
+            std::string spreadsheet_name = "";
+            std::vector<std::string>::iterator it = command.begin();
+            it += 2;
+
+            // Continue adding all tokens until the end of the line to the final parameter
+            for( ; it != command.end(); it++)
+            {
+                spreadsheet_name += *it + " ";
+            }
+
+            // Remove the trailing space from the final token (if there is one)
+            if (spreadsheet_name[spreadsheet_name.size()-1] == ' ')
+                spreadsheet_name = spreadsheet_name.substr(0, spreadsheet_name.size()-1);
+
+            connect_requested(socket_id, command.at(1), spreadsheet_name);
         }
-        
-        // Remove the trailing space from the final token (if there is one)
-        if (spreadsheet_name[spreadsheet_name.size()-1] == ' ')
-            spreadsheet_name = spreadsheet_name.substr(0, spreadsheet_name.size()-1);
-        
-        connect_requested(socket_id, command.at(1), spreadsheet_name);
+        else
+        {
+            // Too few parameters. Send error 2.
+            send_error(socket_id, 2, "Invalid parameters in command: " + line_received);
+        }
     }
     else if (command.at(0) == "register")
-        register_user(socket_id, command.at(1));
+    {
+        if (command.size() == 2)
+            register_user(socket_id, command.at(1));
+        else
+        {
+            // Invalid parameters. Send error 2.
+            send_error(socket_id, 2, "Invalid parameters in command: " + line_received);
+        }
+    }
     else if (command.at(0) == "cell")
     {
-        std::string cell_name, cell_contents = "";
-        std::vector<std::string>::iterator it = command.begin();
-        it++;
-        cell_name = *it;
-        it++;
-        
-        // Continue adding all tokens until the end of the line to the final parameter
-        for( ; it != command.end(); it++)
+        if (command.size() > 2)
         {
-            cell_contents += *it + " ";
+            std::string cell_name, cell_contents = "";
+            std::vector<std::string>::iterator it = command.begin();
+            it++;
+            cell_name = *it;
+            it++;
+            
+            // Continue adding all tokens until the end of the line to the final parameter
+            for( ; it != command.end(); it++)
+            {
+                cell_contents += *it + " ";
+            }
+            
+            // Remove the trailing space from the final token (if there is one)
+            if (cell_contents[cell_contents.size()-1] == ' ')
+                cell_contents = cell_contents.substr(0, cell_contents.size()-1);
+            
+            change_cell(socket_id, cell_name, cell_contents);
         }
-        
-        // Remove the trailing space from the final token (if there is one)
-        if (cell_contents[cell_contents.size()-1] == ' ')
-            cell_contents = cell_contents.substr(0, cell_contents.size()-1);
-        
-        change_cell(socket_id, cell_name, cell_contents);
+        else
+        {
+            // Invalid parameters. Send error 2.
+            send_error(socket_id, 2, "Invalid parameters in command: " + line_received);
+        }
     }
     else if (command.at(0) == "undo")
     {
         std::cout << "In undo else-if" << std::endl;
         undo(socket_id);
     }
-	   
-    // Echos the message back to the sender.
-    //std::string my_string = "Echo: " + line_received + "\n";
-    //send_message(socket_id, my_string);
+    else
+    {
+        // Invalid parameters. Send error 2.
+        send_error(socket_id, 2, "Invalid parameters in command: " + line_received);
+    }
 }// End message_received()
 
 
@@ -551,7 +538,9 @@ void *handle(void *pnewsock)
             current_line = current_line.substr(0, current_line.length()-1);
             
             // call message_received() with the newly received line.
+            godlock.lock();
             message_received(newsock, current_line);
+            godlock.unlock();
         } // End newline detection loop
     } // End infinite receive/newline detection loop
     
@@ -639,7 +628,6 @@ int main(int argc, char* argv[])
             while (file_stream.good())
             {            
                 getline(file_stream, txt);
-                std::cout << "\nSheet name::"+txt+"::\n";
                 
                 // If there exists a file with this name...
                 FILE * sheet_file = fopen("spreadsheets.axis", "r");
@@ -658,7 +646,6 @@ int main(int argc, char* argv[])
                         while (current_file_stream.good())
                         {
                             getline(current_file_stream, current_line);
-                            std::cout << "\n::Contents found::"+current_line+"::\n";
                             
                             // Separare into cell_name and cell_contents by "=" symbol.
                             std::string cell_name, cell_contents;
@@ -666,11 +653,8 @@ int main(int argc, char* argv[])
                             cell_name = current_line.substr(0, equals_index);
                             cell_contents = current_line.substr(equals_index+1, current_line.length()-(equals_index-1));
                             
-			    if(cell_contents == "")
-			      continue;
-                  
-                            std::cout << "\nParsed as:Name::"+cell_name+"::Contents:"+cell_contents+"::\n";
-
+                            if(cell_contents == "")
+                                continue;
                   
                             // Set the cell to what we just read from the file.
                             spreadsheets[txt]->set_cell(cell_name,cell_contents);
@@ -723,19 +707,10 @@ int main(int argc, char* argv[])
     // Release the addrinfo struct's memory
     freeaddrinfo(res);
     
-    /* Set up the signal (event) handler */
-    /*struct sigaction sa;
-     sa.sa_handler = wait_for_child;
-     sigemptyset(&sa.sa_mask);
-     sa.sa_flags = SA_RESTART;
-     if (sigaction(SIGCHLD, &sa, NULL) == -1) {
-     perror("sigaction");
-     return 1;
-     }*/
-    
-    
-    /* Main loop */
-    /* Pairs sockets, launches a new thread for each newly paired socket */
+    /* Main loop
+     *  Threaded server implementation adapted from Martin Broadhurst's
+     *  implementation:  http://martinbroadhurst.com/server-examples.html .
+     *  Pairs sockets, launches a new thread for each newly paired socket */
     pthread_t thread;
     while (1){
         size_t size = sizeof(struct sockaddr_in);
