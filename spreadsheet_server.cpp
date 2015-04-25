@@ -95,7 +95,6 @@ void send_error(int socket_id, int error_id, std::string context);
 
 void send_connect(const int socket_id, const int count)
 {
-
     std::string message = "connected ";
     std::stringstream ss;
     ss << count;
@@ -119,14 +118,14 @@ void send_error(int socket_id, int error_id, std::string context)
 }
 
 //Take in a socket ID and put the spreadsheet pointer associated. Returns 0 if it didn't work, 1 if it did
-int user_to_spreadsheet(int user, spreadsheet *s)
+int user_to_spreadsheet(int user, spreadsheet **s)
 {
     if(user_spreadsheet.count(user) != 0)
     {
         std::string spreadsheet_name = user_spreadsheet[user];
         if(spreadsheets.count(spreadsheet_name) != 0)
         {
-            s = spreadsheets[spreadsheet_name];
+	    (*s) = spreadsheets[spreadsheet_name];
             return 1;
         }
     }
@@ -164,7 +163,6 @@ void register_user(int user_socket_ID, std::string user_name)
 // Handles a client's connection/spreadsheet loading request.
 void connect_requested(int user_socket_ID, std::string user_name, std::string spreadsheet_requested)
 {
-
     // If the username has been registered...
     if (user_list.find(user_name) != user_list.end())
     {
@@ -195,13 +193,10 @@ void connect_requested(int user_socket_ID, std::string user_name, std::string sp
 	    {
                 //Send the cells
 	        std::map<std::string, std::string>::iterator itCells = spreadsheets[spreadsheet_requested]->get_data_map()->begin();
-	        std::cout << "connect 1, size: " << spreadsheets[spreadsheet_requested]->num_cells() << std::endl;
                 for( ; itCells != spreadsheets[spreadsheet_requested]->get_data_map()->end(); ++itCells)
                 {
-	            std::cout << "connect 2" << std::endl;
                     //TODO:Fix this
                     send_cell(user_socket_ID, itCells->first, itCells->second);
-	  	    std::cout << "connect 3" << std::endl;
                 }   
 	    }          
         }
@@ -212,7 +207,7 @@ void connect_requested(int user_socket_ID, std::string user_name, std::string sp
             
             spreadsheet * s = new spreadsheet(spreadsheet_requested);
 	    send_connect(user_socket_ID, s->num_cells());
-            spreadsheets.insert(std::pair<std::string, spreadsheet *>(spreadsheet_requested, s));
+            spreadsheets.insert(std::pair<std::string, spreadsheet*>(spreadsheet_requested, s));
             
             std::vector<int> temp;
             temp.push_back(user_socket_ID);
@@ -232,22 +227,15 @@ void connect_requested(int user_socket_ID, std::string user_name, std::string sp
 //Save all of the spreadsheet names to a file. Read on server launch
 void save_spreadsheet_names(std::string spreadsheet_name)
 {
-
-    
     std::ofstream ss_names;
     ss_names.open("spreadsheets.axis", std::ios_base::app); // This is needed so the file doesnt get overwritten
     ss_names << spreadsheet_name << std::endl;
     ss_names.close();
-    
-
 }
 
 //Save all spreadsheets contents on server. Read on server launch
 void save_open_spreadsheets(std::string spreadsheet_name)
 {
-    
-
-    
     //Create the file name
     std::string file_name = spreadsheet_name;
     file_name += ".axis";
@@ -308,9 +296,7 @@ void save_open_spreadsheets(std::string spreadsheet_name)
 
 // Saves the user_list map to file.  Will be read upon next server launch.
 void save_user_list()
-{
-
-    
+{ 
     // Create/open the file.
     std::ofstream user_list_file;
     user_list_file.open("users.axis", std::ios_base::app); // This is needed so the file doesnt get overwritten
@@ -335,16 +321,11 @@ void change_cell(int user_socket_id, std::string cell_name, std::string new_cell
     std::cout << "in change_cell() with cell name: " << cell_name << ", and contents: " << new_cell_contents << std::endl;
     std::map<int,std::string>::iterator it;
     
-    std::cout << "stage 1" << std::endl;
     spreadsheet *s;
-    if(user_to_spreadsheet(user_socket_id, s))
+    if(user_to_spreadsheet(user_socket_id, &s))
     {
-
-      std::cout << "stage 2" << std::endl;
       if(s->set_cell(cell_name, new_cell_contents))
       {
-
-	std::cout << "stage 3" << std::endl;
 	std::vector<int> users = spreadsheet_user[s->get_name()];
 	std::vector<int>::iterator it;
 	for(it = users.begin(); it != users.end(); it++)
@@ -405,14 +386,11 @@ void change_cell(int user_socket_id, std::string cell_name, std::string new_cell
 
 void undo(int socket_id)
 {
-    
-    std::cout << "In undo" << std::endl;
     //Find the spreadsheet
     //Call undo on spreadsheet
     //Send the cell change to all other users on the spreadsheet
     spreadsheet *s;
-    if(user_to_spreadsheet(socket_id, s))
-        
+    if(user_to_spreadsheet(socket_id, &s))
     {
         std::string cell, contents;
         if(s->undo(&cell, &contents))
@@ -435,7 +413,6 @@ void undo(int socket_id)
 // Used to send a string through a socket.
 int send_message(int socket_id, std::string string_to_send)
 {
-    
     // If socket_id is 0, we don't want to send the message.
     //   (It's the server sending an error to itself as though it's a client)
     if (socket_id == 0)
@@ -518,9 +495,7 @@ void message_received(int socket_id, std::string & line_received)
  */
 // Splits a string message into its space-separated components.
 void split_message(std::string message, std::vector<std::string> & ret)
-{
-
-    
+{   
     if(message[message.size()-1] == '\r')
         message = message.substr(0, message.size()-1);
     

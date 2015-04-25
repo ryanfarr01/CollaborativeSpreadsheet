@@ -15,7 +15,6 @@ spreadsheet::spreadsheet(std::string name)
   
   dependencies = new std::map<std::string, std::vector<std::string> >();
   dependencies->clear();
-  std::cout << "dependencies memory: " << dependencies << std::endl;
 
   changes = new std::stack<cellChange>();
 }
@@ -73,22 +72,15 @@ std::string spreadsheet::get_cell(std::string cellName)
  */
 int spreadsheet::has_dependency(std::string c1, std::string c2)
 {
-  std::cout << "dependencies memory: " << dependencies << std::endl;
-  std::cout << "deps 1" << std::endl;
   if((*dependencies).count(c2) != 0)
   {
-    std::cout << "deps 2" << std::endl;
     for(std::vector<std::string>::iterator it = (*dependencies)[c2].begin(); it != (*dependencies)[c2].end(); it++)
     {
-      std::cout << "deps 3" << std::endl;
       if(*it == c1) { return 1; }
       if(has_dependency(c1, *it)) { return 1; } 
-      std::cout << "deps 4" << std::endl;
     }
-    std::cout << "deps 5" << std::endl;
   }
 
-  std::cout << "deps 6" << std::endl;
   return 0;
 }
 
@@ -104,8 +96,6 @@ int spreadsheet::set_cell(std::string cellName, std::string cellContents)
   cellName[0] = toupper(cellName[0]);
   std::vector<std::string> temp_depends;
 
-  std::cout << "num 1" << std::endl;
-
   //Erase white space
   std::string::size_type position = 0;
   while((position = cellContents.find(" ", position)) != std::string::npos)
@@ -113,14 +103,9 @@ int spreadsheet::set_cell(std::string cellName, std::string cellContents)
     cellContents.erase(position, 1);
   }
 
-  std::cout << "num 2" << std::endl;
-
   //Check for contents
   if(cellContents[0] == '=')
   {
-    
-    std::cout << "num 3" << std::endl;
-
     //Get all instances of cell names
     //Check if would cause circular dependency
     //Set cell contents or don't and return 1 or 0, respectively
@@ -138,8 +123,6 @@ int spreadsheet::set_cell(std::string cellName, std::string cellContents)
       temp_depends.push_back(t);
     }
     
-    std::cout << "num 4" << std::endl;
-    
     //Testing /!\ *************************************
     //std::cout << "setting cell:" << cellName << " to:" << cellContents << std::endl;
     //std::cout << "With dependencies: " << std::endl;
@@ -149,15 +132,12 @@ int spreadsheet::set_cell(std::string cellName, std::string cellContents)
 
     for(std::vector<std::string>::iterator itt = temp_depends.begin(); itt != temp_depends.end(); itt++)
     {
-      std::cout << "Made it in" << std::endl;
       if(*itt == cellName)
 	return 0;
-      std::cout << "Made it in 2" << std::endl;
+
       if(has_dependency(cellName, *itt)) 
 	 return 0;
     }
-
-    std::cout << "num 5" << std::endl;
     
     cellChange c(cellName, (*data)[cellName]);
     (*data)[cellName] = cellContents;
@@ -165,8 +145,6 @@ int spreadsheet::set_cell(std::string cellName, std::string cellContents)
     changes->push(c);
     return 1;
   }
-
-  std::cout << "num 6" << std::endl;
 
   //Case of it not being an equation
   //make cell dependent on nothing
@@ -176,9 +154,7 @@ int spreadsheet::set_cell(std::string cellName, std::string cellContents)
   
   cellChange c(cellName, (*data)[cellName]);
   changes->push(c);
-  (*data)[cellName] = originalContents;  
-  
-  std::cout << "num 7" << std::endl;
+  (*data)[cellName] = originalContents;
 
   return 1;
 }
