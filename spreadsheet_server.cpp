@@ -69,9 +69,6 @@ void split_message(std::string message, std::vector<std::string> & ret);
 // Registers a new user, or sends an error to the requesting client.
 void register_user(int user_socket_ID, std::string user_name);
 
-// Saves the current list of registered users to file.
-void save_user_list();
-
 //Save the current spreadsheets contents
 void save_open_spreadsheets(std::string);
 
@@ -143,8 +140,14 @@ void register_user(int user_socket_ID, std::string user_name)
   {
     if(user_list.count(user_name) == 0)
     {
+      // Add name to map
       user_list.insert(std::make_pair(user_name, 1));
-      save_user_list();
+      
+      // Add name to user list file
+      std::ofstream user_names;
+      user_names.open("users.axis", std::ios_base::app); // This is needed so the file doesnt get overwritten
+      user_names << user_name << std::endl;
+      user_names.close();
     }
   }
   else
@@ -303,27 +306,6 @@ void save_open_spreadsheets(std::string spreadsheet_name)
     //        }
     //    }
 }
-
-// Saves the user_list map to file.  Will be read upon next server launch.
-void save_user_list()
-{ 
-    // Create/open the file.
-    std::ofstream user_list_file;
-    user_list_file.open("users.axis", std::ios_base::app); // This is needed so the file doesnt get overwritten
-    
-    // Iterate over the user_list map, and write each of its vales to file.
-    std::map<std::string, bool>::iterator it;
-    for (it = user_list.begin(); it != user_list.end(); it++)
-    {
-        user_list_file << it->first << "\n";
-    }
-    
-    // Close the file
-    user_list_file.close();
-    
-
-} // End save_user_list()
-
 
 //Change the requested cell
 void change_cell(int user_socket_id, std::string cell_name, std::string new_cell_contents)
@@ -619,8 +601,14 @@ int main(int argc, char* argv[])
     // Otherwise, create it.
     else
     {
+        // Add name to map
         user_list.insert(std::make_pair(std::string("sysadmin"), true));
-        save_user_list();
+        
+        // Add name to user list file
+        std::ofstream user_names;
+        user_names.open("users.axis", std::ios_base::app); // This is needed so the file doesnt get overwritten
+        user_names << "sysadmin" << std::endl;
+        user_names.close();
     }
     
     
