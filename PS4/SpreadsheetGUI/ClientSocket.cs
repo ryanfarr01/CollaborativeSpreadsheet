@@ -234,6 +234,8 @@ public class CommandProcessor
 /// </summary>
 public class SocketHandler
 {
+    public delegate void connectedFunction();
+    connectedFunction conFunc;
     /// <summary>
     /// An object that will parse received messages. To be replaced by an event 
     /// system in the final version that the object will hook into instead.
@@ -263,8 +265,9 @@ public class SocketHandler
     /// <param name="host"></param>
     /// <param name="ip">IP address in string form, such as 192.168.1.10</param>
     /// <param name="port">Port to connect though.</param>
-    public SocketHandler(string host, string ip, int port, CommandProcessor _parser)
+    public SocketHandler(string host, string ip, int port, CommandProcessor _parser, connectedFunction _conFunc)
     {
+        conFunc = _conFunc;
         parser = _parser;
         // first we need to know where we are connecting from
         IPHostEntry hostEntry = null;
@@ -299,6 +302,7 @@ public class SocketHandler
             Console.WriteLine("connected");
             // Start listening for recieves from the server
             Receive();
+            conFunc();
         }
         catch (Exception e)
         {

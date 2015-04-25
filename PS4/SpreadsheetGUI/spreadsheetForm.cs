@@ -29,8 +29,8 @@ namespace SpreadsheetGUI
         private string userName = "sysadmin";
         private string spreadsheetName = "any";
         private string IPAddress = "";
-        private string hostName = "striker";
-        private string port = "2115";
+        private string hostName = "lab1-37.eng.utah.edu";
+        private string port = "2117";
         /// <summary>
         /// The underlying spreadsheet data.
         /// </summary>
@@ -497,9 +497,8 @@ namespace SpreadsheetGUI
 
             try
             {
-                socket = new SocketHandler(hostName, IPAddress, portNum, parser);
+                socket = new SocketHandler(hostName, IPAddress, portNum, parser, connectedCallback);
                 waitingForConnected = true;
-                sendConnect("connect " + userName + " " + spreadsheetName);
             }
             catch (Exception e)
             {
@@ -533,6 +532,7 @@ namespace SpreadsheetGUI
                     {
                         MessageBox.Show("Invalid username, connection failed:\n" + errorMessage);
                         CloseSocket();
+                        waitingForConnected = false;
                     }
                     else
                         MessageBox.Show("Invalid username:\n" + errorMessage); 
@@ -591,6 +591,9 @@ namespace SpreadsheetGUI
             connected = false;
         }
 
+        private void connectedCallback(){
+                sendConnect("connect " + userName + " " + spreadsheetName);
+        }
 
     }
 }
