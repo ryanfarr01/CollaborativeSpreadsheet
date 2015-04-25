@@ -85,7 +85,7 @@ namespace SpreadsheetGUI
 
             spreadsheetPanel1.SelectionChanged += displaySelection;
             spreadsheetPanel1.SetSelection(0, 0);
-            parser = new CommandProcessor(ConnectionSuccess, CellChange, Error, InvalidCommand);
+            parser = new CommandProcessor(ConnectionSuccess, CellChange, Error, InvalidCommand, CrashFunction);
         }
 
 
