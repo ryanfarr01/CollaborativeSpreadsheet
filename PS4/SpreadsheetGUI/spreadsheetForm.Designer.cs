@@ -34,6 +34,7 @@
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.registerUserToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.closeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.selectNewCellToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -46,7 +47,6 @@
             this.cellValueField = new System.Windows.Forms.ToolStripLabel();
             this.cellContentsField = new System.Windows.Forms.ToolStripTextBox();
             this.spreadsheetPanel1 = new SS.SpreadsheetPanel();
-            this.registerUserToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -81,22 +81,29 @@
             // newToolStripMenuItem
             // 
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
-            this.newToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.newToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
             this.newToolStripMenuItem.Text = "New Window";
             this.newToolStripMenuItem.Click += new System.EventHandler(this.newToolStripMenuItem_Click);
             // 
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
             this.openToolStripMenuItem.Text = "Connect";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
+            // 
+            // registerUserToolStripMenuItem
+            // 
+            this.registerUserToolStripMenuItem.Name = "registerUserToolStripMenuItem";
+            this.registerUserToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
+            this.registerUserToolStripMenuItem.Text = "Register User";
+            this.registerUserToolStripMenuItem.Click += new System.EventHandler(this.registerUserToolStripMenuItem_Click);
             // 
             // closeToolStripMenuItem
             // 
             this.closeToolStripMenuItem.Name = "closeToolStripMenuItem";
-            this.closeToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.closeToolStripMenuItem.Text = "Close";
+            this.closeToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
+            this.closeToolStripMenuItem.Text = "Disconnect and Close";
             this.closeToolStripMenuItem.Click += new System.EventHandler(this.closeToolStripMenuItem_Click);
             // 
             // helpToolStripMenuItem
@@ -190,13 +197,6 @@
             this.spreadsheetPanel1.Size = new System.Drawing.Size(984, 494);
             this.spreadsheetPanel1.TabIndex = 0;
             this.spreadsheetPanel1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.spreadsheetPanel1_KeyDown);
-            // 
-            // registerUserToolStripMenuItem
-            // 
-            this.registerUserToolStripMenuItem.Name = "registerUserToolStripMenuItem";
-            this.registerUserToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.registerUserToolStripMenuItem.Text = "Register User";
-            this.registerUserToolStripMenuItem.Click += new System.EventHandler(this.registerUserToolStripMenuItem_Click);
             // 
             // spreadsheetForm
             // 

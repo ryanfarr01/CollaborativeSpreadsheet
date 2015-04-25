@@ -17,18 +17,21 @@ public class CommandProcessor
     public delegate void cellFunction(string cellName, string cellContents);
     public delegate void errorFunction(int errorNumber, string errorMessage);
     public delegate void invalidFunction(string badCommand, string explaination);
+    public delegate void crashFunction();
 
     connectedFunction conFunc;
     cellFunction cellFunc;
     errorFunction errorFunc;
     invalidFunction invalidFunc;
+    crashFunction crashFunc;
 
-    public CommandProcessor(connectedFunction con, cellFunction cell, errorFunction error, invalidFunction invalid)
+    public CommandProcessor(connectedFunction con, cellFunction cell, errorFunction error, invalidFunction invalid, crashFunction crash)
     {
         conFunc = con;
         cellFunc = cell;
         errorFunc = error;
         invalidFunc = invalid;
+        crashFunc = crash;
     }
 
 
@@ -77,7 +80,7 @@ public class CommandProcessor
 
     private void ReceiveConnected(string[] tokens, string s)
     {
-        if (tokens.Length != 2)
+        if (tokens.Length == 2)
         {
             int cellCount;
             bool result = Int32.TryParse(tokens[1], out cellCount);
@@ -152,6 +155,11 @@ public class CommandProcessor
     private void InvalidCommand(string s, string p)
     {
         invalidFunc(s, p);
+    }
+
+    public void SocketFail()
+    {
+        crashFunc();
     }
 
     /////////////////////////// send methods //////////////////////////////
@@ -323,22 +331,28 @@ public class SocketHandler
         try
         {
             // Read data
-            int bytes = socket.EndReceive(result);
+            if (socket.Connected)
+            {
+                int bytes = socket.EndReceive(result);
 
-            // append data to already existing data
-            if (bytes > 0)
-                incomingData += Encoding.ASCII.GetString(buffer, 0, bytes);
+                // append data to already existing data
+                if (bytes > 0)
+                    incomingData += Encoding.ASCII.GetString(buffer, 0, bytes);
 
-            // split off and handle any completed messages.
-            while (incomingData.Contains("\n"))
-                SplitIncomingData();
+                // split off and handle any completed messages.
+                while (incomingData.Contains("\n"))
+                {
+                    SplitIncomingData();
+                }
 
-            // listen for more data
-            socket.BeginReceive(buffer, 0, 256, 0, new AsyncCallback(ReceiveCallback), null);
+                // listen for more data
+                socket.BeginReceive(buffer, 0, 256, 0, new AsyncCallback(ReceiveCallback), null);
+            }
         }
         catch (Exception e)
         {
             Console.WriteLine(e.ToString());
+            parser.SocketFail();
         }
     }
 
@@ -366,8 +380,15 @@ public class SocketHandler
         // get bytes from string
         byte[] bytes = Encoding.ASCII.GetBytes(message);
 
-        // Begin sending the data
         socket.BeginSend(bytes, 0, bytes.Length, 0, new AsyncCallback(SendCallback), null);
+
+        // Begin sending the data
+        /*
+        if (socket.Connected)
+            socket.BeginSend(bytes, 0, bytes.Length, 0, new AsyncCallback(SendCallback), null);
+        else
+            Close();
+         */
     }
 
     /// <summary>
@@ -391,6 +412,7 @@ public class SocketHandler
 
     public void Close()
     {
+        socket.Shutdown(SocketShutdown.Both);
         socket.Close();
     }
 

@@ -33,5 +33,4 @@ C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\Spre
 C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetGUI\obj\Debug\SpreadsheetGUI.spreadsheetForm.resources
 C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetGUI\obj\Debug\SpreadsheetGUI.Properties.Resources.resources
 C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetGUI\obj\Debug\SpreadsheetGUI.csproj.GenerateResource.Cache
-C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetGUI\bin\Debug\ConnectionDialog.exe
-C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetGUI\bin\Debug\ConnectionDialog.pdb
+C:\Users\DrOsw_000\Desktop\Spreadsheet project\CollaborativeSpreadsheet\PS4\SpreadsheetGUI\obj\Debug\SpreadsheetGUI.ConnectionForm.resources
