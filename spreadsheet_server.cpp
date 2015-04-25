@@ -443,8 +443,8 @@ void message_received(int socket_id, std::string & line_received)
     }
 	   
     // Echos the message back to the sender.
-    std::string my_string = "Echo: " + line_received + "\n";
-    send_message(socket_id, my_string);
+    //std::string my_string = "Echo: " + line_received + "\n";
+    //send_message(socket_id, my_string);
 }// End message_received()
 
 
@@ -637,27 +637,28 @@ int main(int argc, char* argv[])
         if (file_stream.is_open())
             // For each spreadsheet name in the file...
             while (file_stream.good())
-            {
+            {            
                 getline(file_stream, txt);
+                std::cout << "\nSheet name::"+txt+"::\n";
                 
                 // If there exists a file with this name...
-                FILE * sheet_file = fopen("spreadsheets.axissheet", "r");
+                FILE * sheet_file = fopen("spreadsheets.axis", "r");
                 bool file_exists = (sheet_file == NULL) ? false : true;
                 if (file_exists)
                 {
                     fclose(sheet_file);
                     
-		    spreadsheet* s = new spreadsheet(txt);
-		    spreadsheets[txt] = s;
+		    spreadsheets[txt] = new spreadsheet(txt);
 
                     // Open the file with this spreadsheet's name...
-                    std::ifstream current_file_stream((txt+".axis").c_str());
+                    std::ifstream current_file_stream((txt+".axissheet").c_str());
                     std::string current_line;
                     if (current_file_stream.is_open())
                         // While new lines exist within this file...
                         while (current_file_stream.good())
                         {
                             getline(current_file_stream, current_line);
+                            std::cout << "\n::Contents found::"+current_line+"::\n";
                             
                             // Separare into cell_name and cell_contents by "=" symbol.
                             std::string cell_name, cell_contents;
@@ -667,9 +668,12 @@ int main(int argc, char* argv[])
                             
 			    if(cell_contents == "")
 			      continue;
+                  
+                            std::cout << "\nParsed as:Name::"+cell_name+"::Contents:"+cell_contents+"::\n";
 
+                  
                             // Set the cell to what we just read from the file.
-                            s->set_cell(cell_name,cell_contents);
+                            spreadsheets[txt]->set_cell(cell_name,cell_contents);
                         }
                     current_file_stream.close();
                 }
