@@ -9,3 +9,6 @@ spreadsheet.o:
 
 clean:
 	rm -f *.o spreadsheet_server *.h.gch
+
+purge:
+	rm -f *.o spreadsheet_server *.h.gch *.axis *.axissheet

@@ -6,19 +6,20 @@
  */
 
 /*
- * Description: Creates a server which pairs sockets, launches a forked thread for
+ * Description: Creates a server which pairs sockets, launches a thread for
  *   each socket paired, waits for messages from  each socket, and provides a convenient function for
  *   communicating with clients via sockets.
  */
 
 /*
- *  Forked server implementation adapted from Martin Broadhurst's
+ *  Threaded server implementation adapted from Martin Broadhurst's
  *     implementation:  http://martinbroadhurst.com/server-examples.html
  *
  *  Code utilizes the Berkely sockets API
  */
 
-
+ 
+#include <algorithm> // remove()
 #include <fstream> // File I/O
 #include <iostream> // console I/O
 #include <stdio.h> // perror error message printing
@@ -30,7 +31,6 @@
 #include <map>
 #include <sstream>
 #include <netdb.h> // addrinfo/getaddrinfo
-#include <algorithm>
 #include "spreadsheet.h"
 #include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -135,13 +135,6 @@ int user_to_spreadsheet(int user, spreadsheet **s)
     
     return 0;
 }
-
-// Signal handler to reap zombie processes
-static void wait_for_child(int sig)
-{
-    while (waitpid(-1, NULL, WNOHANG) > 0);
-} // end wait_for_child()
-
 
 // Processes a username registration request.
 void register_user(int user_socket_ID, std::string user_name)
@@ -255,7 +248,7 @@ void save_open_spreadsheets(std::string spreadsheet_name)
 {
     //Create the file name
     std::string file_name = spreadsheet_name;
-    file_name += ".axis";
+    file_name += ".axissheet";
     std::ofstream ss;
     //Open the file
     ss.open(file_name.c_str());
@@ -277,7 +270,7 @@ void save_open_spreadsheets(std::string spreadsheet_name)
     //        {
     //            //Create the file name
     //            std::string file_name = itOpen->first;
-    //            file_name += ".axis";
+    //            file_name += ".axissheet";
     //            //Get the data from the spreadsheet
     //            //std::map<std::string, std::string>::iterator data_it;
     //            std::ofstream ss;
@@ -426,10 +419,17 @@ void message_received(int socket_id, std::string & line_received)
         std::string spreadsheet_name = "";
         std::vector<std::string>::iterator it = command.begin();
         it += 2;
-        for( ; it != command.end(); it++)
+        
+         // Continue adding all tokens until the end of the line to the final parameter
+       for( ; it != command.end(); it++)
         {
 	  spreadsheet_name += *it + " ";
         }
+        
+        // Remove the trailing space from the final token (if there is one)
+        if (spreadsheet_name[spreadsheet_name.size()-1] == ' ')
+            spreadsheet_name = spreadsheet_name.substr(0, spreadsheet_name.size()-1);
+        
         connect_requested(socket_id, command.at(1), spreadsheet_name);
     }
     else if (command.at(0) == "register")
@@ -442,10 +442,15 @@ void message_received(int socket_id, std::string & line_received)
         cell_name = *it;
         it++;
         
+        // Continue adding all tokens until the end of the line to the final parameter
         for( ; it != command.end(); it++)
         {
             cell_contents += *it + " ";
         }
+        
+        // Remove the trailing space from the final token (if there is one)
+        if (cell_contents[cell_contents.size()-1] == ' ')
+            cell_contents = cell_contents.substr(0, cell_contents.size()-1);
         
         change_cell(socket_id, cell_name, cell_contents);
     }
@@ -468,9 +473,11 @@ void message_received(int socket_id, std::string & line_received)
 // Splits a string message into its space-separated components.
 void split_message(std::string message, std::vector<std::string> & ret)
 {   
-    if(message[message.size()-1] == '\r')
-        message = message.substr(0, message.size()-1);
+    // Strip any carriage returns off of our message.
+    message.erase( remove(message.begin(), message.end(), '\r'), message.end() );
+    message.erase( remove(message.begin(), message.end(), '\n'), message.end() );
     
+    // Add the tokens one by one, space-separated
     ret.clear();
     int pos = message.find(' ');
     int pos_init = 0;
@@ -484,9 +491,9 @@ void split_message(std::string message, std::vector<std::string> & ret)
         pos = message.find(' ', pos_init);
     }
     
-    ret.push_back(message.substr(pos_init, std::min(pos, static_cast<int>(message.size())) - pos_init));
+    // Add the last token missed by the above loop
+    ret.push_back(message.substr(pos_init, message.size() - pos_init));
     
-
 }// End split_message()
 
 
@@ -505,7 +512,7 @@ void client_disconnected(int socket_id)
 
 
 // Handler (event) fired for each new socket.
-// Invoked in a forked thread as soon as the socket is paired.
+// Invoked in a new thread as soon as the socket is paired.
 void *handle(void *pnewsock)
 {
     int newsock = *(int*)pnewsock; // Cast to string identifier of the socket
@@ -535,6 +542,7 @@ void *handle(void *pnewsock)
         // If we failed to receive properly, send an error to the error stream, and return.
         if (bytes_received == -1) {
             perror("handle()'s message reception failed");
+            client_disconnected(newsock);
             return NULL;
         }
         
@@ -570,7 +578,7 @@ void *handle(void *pnewsock)
 
 
 // Main function.  Creates a server which pairs sockets to connecting clients, and
-//   launches a callback handle in a forked thread for each.
+//   launches a callback handle in a new thread for each.
 int main(int argc, char* argv[])
 {
     // Holds the port number we're going to host on.   Default to port 2000 as per protocol specification.
@@ -596,7 +604,6 @@ int main(int argc, char* argv[])
     
     // If the users.axis file exists, add its users to the user_list.
     if (exists)
-        
     {
         std::ifstream file_stream("users.axis");
         std::string txt;
@@ -646,7 +653,7 @@ int main(int argc, char* argv[])
                 getline(file_stream, txt);
                 
                 // If there exists a file with this name...
-                FILE * sheet_file = fopen("spreadsheets.axis", "r");
+                FILE * sheet_file = fopen("spreadsheets.axissheet", "r");
                 bool file_exists = (sheet_file == NULL) ? false : true;
                 if (file_exists)
                 {
