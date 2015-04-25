@@ -515,8 +515,15 @@ namespace SpreadsheetGUI
 
         private void CellChange(string cellName, string cellContents)
         {
-            setCellContent(cellName, cellContents);
-            setFormContents(cellName);
+            try
+            {
+                setCellContent(cellName, cellContents);
+                setFormContents(cellName);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
         }
 
         private void Error(int errorNumber, string errorMessage)
