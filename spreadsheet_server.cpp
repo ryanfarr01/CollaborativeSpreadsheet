@@ -143,6 +143,18 @@ static void wait_for_child(int sig)
 // Processes a username registration request.
 void register_user(int user_socket_ID, std::string user_name)
 {
+  if(user_spreadsheet.count(user_socket_ID) > 0)
+  {
+    if(user_list.count(user_name) == 0)
+    {
+      user_list.insert(std::make_pair(user_name, 1));
+      save_user_list();
+    }
+  }
+  else
+  {
+    send_error(user_socket_ID, 4, user_name);
+  }
     // NOTE: THIS CODE CANNOT BE USED UNTIL SOCKETS ARE ASSOCIATED WITH USERNAMES.
     
     // If (user_socket_ID is logged in as a registered user)
