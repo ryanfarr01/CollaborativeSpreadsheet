@@ -484,6 +484,13 @@ namespace SpreadsheetGUI
             port = _port;
             int portNum;
 
+            List<string> cellList = new List<string>(baseSpreadsheet.GetNamesOfAllNonemptyCells());
+
+            foreach (string cell in cellList)
+            {
+                CellChange(cell,"");
+            }
+
             if (socket != null)
             {
                 socket.Close();
@@ -510,8 +517,8 @@ namespace SpreadsheetGUI
 
         private void ConnectionSuccess(int cellCount)
         {
+            MessageBox.Show("ConnectionSuccess");
             connected = true;
-            MessageBox.Show("Connection Successful");
         }
 
         private void CellChange(string cellName, string cellContents)
@@ -535,12 +542,12 @@ namespace SpreadsheetGUI
                 case 2: MessageBox.Show("Invalid Command:\n" + errorMessage); break;
                 case 3: MessageBox.Show("Unable to perform command in current state:\n" + errorMessage); break;
                 case 4: 
-                    MessageBox.Show("Invalid username:\n" + errorMessage);
                     if (waitingForConnected == true)
                     {
                         MessageBox.Show("Invalid username, connection failed:\n" + errorMessage);
                         CloseSocket();
                         waitingForConnected = false;
+                        connected = false;
                     }
                     else
                         MessageBox.Show("Invalid username:\n" + errorMessage); 

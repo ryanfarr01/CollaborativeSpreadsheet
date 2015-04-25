@@ -117,9 +117,7 @@ public class CommandProcessor
         {
             int errorNumber;
             bool result = Int32.TryParse(tokens[1], out errorNumber);
-            if (result)
-                ConnectionSuccess(errorNumber);
-            else
+            if (!result)
                 InvalidCommand(s, "Cannot parse Error Number.");
 
             string errorMessage = tokens[2];
@@ -234,8 +232,9 @@ public class CommandProcessor
 /// </summary>
 public class SocketHandler
 {
+    public Boolean notClosed = true;
     public delegate void connectedFunction();
-    connectedFunction conFunc;
+    private connectedFunction connectFunc;
     /// <summary>
     /// An object that will parse received messages. To be replaced by an event 
     /// system in the final version that the object will hook into instead.
@@ -267,7 +266,7 @@ public class SocketHandler
     /// <param name="port">Port to connect though.</param>
     public SocketHandler(string host, string ip, int port, CommandProcessor _parser, connectedFunction _conFunc)
     {
-        conFunc = _conFunc;
+        connectFunc = _conFunc;
         parser = _parser;
         // first we need to know where we are connecting from
         IPHostEntry hostEntry = null;
@@ -302,7 +301,7 @@ public class SocketHandler
             Console.WriteLine("connected");
             // Start listening for recieves from the server
             Receive();
-            conFunc();
+            connectFunc();
         }
         catch (Exception e)
         {
@@ -355,8 +354,12 @@ public class SocketHandler
         }
         catch (Exception e)
         {
-            Console.WriteLine(e.ToString());
-            parser.SocketFail();
+            lock (this)
+            {
+                Console.WriteLine(e.ToString());
+                if(notClosed)
+                    parser.SocketFail();
+            }
         }
     }
 
@@ -416,8 +419,17 @@ public class SocketHandler
 
     public void Close()
     {
-        socket.Shutdown(SocketShutdown.Both);
-        socket.Close();
+        lock (this)
+        {
+            int t = 1;
+            if (notClosed)
+            {
+                socket.Shutdown(SocketShutdown.Both);
+                socket.Close();
+                notClosed = false;
+            }
+            
+        }
     }
 
     /*
