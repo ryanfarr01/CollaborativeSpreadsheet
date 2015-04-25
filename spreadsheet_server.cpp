@@ -76,7 +76,7 @@ void save_user_list();
 void save_open_spreadsheets(std::string);
 
 //Save the current spreadsheets contents
-void save_spreadsheet_names();
+void save_spreadsheet_names(std::string);
 
 // Handles a client's connection/spreadsheet loading request.
 void connect_requested(int user_socket_ID, std::string user_name, std::string spreadsheet_requested);
@@ -92,6 +92,9 @@ void send_cell(const int socket_id, const std::string cellName, const std::strin
 
 //Send error
 void send_error(int socket_id, int error_id, std::string context);
+
+//Remove a user from previous spreadsheets
+void remove_user(int socket_id);
 
 void send_connect(const int socket_id, const int count)
 {
@@ -155,22 +158,21 @@ void register_user(int user_socket_ID, std::string user_name)
   {
     send_error(user_socket_ID, 4, user_name);
   }
-    // NOTE: THIS CODE CANNOT BE USED UNTIL SOCKETS ARE ASSOCIATED WITH USERNAMES.
-    
-    // If (user_socket_ID is logged in as a registered user)
-    //{
-    //	// If name isn't already registered; register it
-    //	if (user_list.find(user_name) == user_list.end())
-    //	{
-    //		user_list.insert(std::make_pair(std::string("sysadmin"), true));
-    //		save_user_list();
-    //	}
-    // 	else
-    //		// Name is already registered. Respond with error 4.
-    //		send_message(user_socket_ID, "Error 4 " + user_name + "\n");
-    //}
 }// End register_user()
 
+//Remove users who were previously connected
+void remove_user(int socket_id)
+{
+  if(user_spreadsheet.count(socket_id) > 0)
+  {
+    std::string spreadsheet = user_spreadsheet[socket_id];
+    user_spreadsheet.erase(socket_id);
+
+    std::vector<int>::iterator it;
+    it = find(spreadsheet_user[spreadsheet].begin(), spreadsheet_user[spreadsheet].end(), socket_id);
+    spreadsheet_user[spreadsheet].erase(it);
+  }
+}
 
 // Handles a client's connection/spreadsheet loading request.
 void connect_requested(int user_socket_ID, std::string user_name, std::string spreadsheet_requested)
@@ -178,7 +180,9 @@ void connect_requested(int user_socket_ID, std::string user_name, std::string sp
     // If the username has been registered...
     if (user_list.find(user_name) != user_list.end())
     {
-        //If the spreadsheet exists
+        remove_user(user_socket_ID);
+        
+	//If the spreadsheet exists
         if(spreadsheets.count(spreadsheet_requested) == 1)
         {
             //associate the socket with the spreadsheet
@@ -225,6 +229,7 @@ void connect_requested(int user_socket_ID, std::string user_name, std::string sp
             temp.push_back(user_socket_ID);
             spreadsheet_user.insert(std::pair<std::string, std::vector<int> >(spreadsheet_requested, temp));
             user_spreadsheet.insert(std::pair<int, std::string>(user_socket_ID, spreadsheet_requested));
+	    save_spreadsheet_names(spreadsheet_requested);
         }
     }
     // Otherwise, respond with error 4
@@ -344,56 +349,13 @@ void change_cell(int user_socket_id, std::string cell_name, std::string new_cell
 	{
 	  send_cell(*it, cell_name, new_cell_contents);
 	}
+	save_open_spreadsheets(s->get_name());
       }
       else
       {
 	send_error(user_socket_id, 2, "Circular Dependency");
       }
     }
-
-
-    /*
-    for(it = user_spreadsheet.begin(); it != user_spreadsheet.end(); it++)
-    {
-        //Find the spreadsheet name by the socket
-        if(it->first == user_socket_id)
-        {
-            //get the spreadsheet from the master list
-            std::map<std::string,spreadsheet*>::iterator itMaster;
-            for(itMaster = spreadsheets.begin(); itMaster != spreadsheets.end(); itMaster++)
-            {
-                if(it->second == itMaster->first)
-                {
-                    //Change it, Make sure its good
-                    if((itMaster->second->set_cell(cell_name, new_cell_contents)) == 1)
-                    {
-                        //If it is ok, send the changes to all the clients
-                        std::map<std::string,std::vector<int> >::iterator itOpen;
-                        for(itOpen = spreadsheet_user.begin(); itOpen != spreadsheet_user.end(); itOpen++)
-                        {
-                            //Get the right open spreadsheet
-                            if(itOpen->first == itMaster->first)
-                            {
-                                //Go through all the clients and send them the changes
-                                std::vector<int>::iterator itUsers;
-                                for(itUsers = itOpen->second.begin(); itUsers != itOpen->second.end(); itUsers++)
-                                {
-                                    send_cell(*itUsers, cell_name, new_cell_contents);
-                                }
-                            }
-                        }
-                        save_open_spreadsheets(itMaster->first);
-                    }
-                    //returns 0. Send error
-                    else
-                    {
-                        send_error(user_socket_id, 2, "Circular Dependency");
-                    }
-                }
-            }
-        }
-	}*/
-  
 }
 
 void undo(int socket_id)
@@ -418,9 +380,6 @@ void undo(int socket_id)
     }
     
 }
-
-
-
 
 // Used to send a string through a socket.
 int send_message(int socket_id, std::string string_to_send)
@@ -458,18 +417,21 @@ void message_received(int socket_id, std::string & line_received)
     
     std::vector<std::string> command;
     split_message(line_received, command);
-    
-    std::cout << "In pieces:" << std::endl;
-    for(std::vector<std::string>::iterator it = command.begin(); it != command.end(); ++it)
-    {
-        std::cout << *it << std::endl;
-    }
-    
+        
     // Call the appropriate functions for the received command.
     // NOTE: THIS IS ROUGH CODE AND IS NOT INTENDED TO BE NOT ERROR-PROOF.
     //		MUST DETECT ERRORS AS PER THE PROTOCOL.
     if (command.at(0) == "connect")
-        connect_requested(socket_id, command.at(1), command.at(2));
+    {
+        std::string spreadsheet_name = "";
+        std::vector<std::string>::iterator it = command.begin();
+        it += 2;
+        for( ; it != command.end(); it++)
+        {
+	  spreadsheet_name += *it + " ";
+        }
+        connect_requested(socket_id, command.at(1), spreadsheet_name);
+    }
     else if (command.at(0) == "register")
         register_user(socket_id, command.at(1));
     else if (command.at(0) == "cell")
@@ -496,8 +458,6 @@ void message_received(int socket_id, std::string & line_received)
     // Echos the message back to the sender.
     std::string my_string = "Echo: " + line_received + "\n";
     send_message(socket_id, my_string);
-    
-
 }// End message_received()
 
 
@@ -692,6 +652,9 @@ int main(int argc, char* argv[])
                 {
                     fclose(sheet_file);
                     
+		    spreadsheet* s = new spreadsheet(txt);
+		    spreadsheets[txt] = s;
+
                     // Open the file with this spreadsheet's name...
                     std::ifstream current_file_stream((txt+".axis").c_str());
                     std::string current_line;
@@ -707,8 +670,11 @@ int main(int argc, char* argv[])
                             cell_name = current_line.substr(0, equals_index);
                             cell_contents = current_line.substr(equals_index+1, current_line.length()-(equals_index-1));
                             
+			    if(cell_contents == "")
+			      continue;
+
                             // Set the cell to what we just read from the file.
-                            change_cell(0,cell_name,cell_contents);
+                            s->set_cell(cell_name,cell_contents);
                         }
                     current_file_stream.close();
                 }

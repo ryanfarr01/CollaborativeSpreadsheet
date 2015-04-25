@@ -92,6 +92,8 @@ int spreadsheet::has_dependency(std::string c1, std::string c2)
  */
 int spreadsheet::set_cell(std::string cellName, std::string cellContents)
 {
+  std::cout << "In " << name << "'s set_cell with cell: " << cellName << ", and contents: " << cellContents << std::endl;
+
   std::string originalContents = cellContents;
   cellName[0] = toupper(cellName[0]);
   std::vector<std::string> temp_depends;
