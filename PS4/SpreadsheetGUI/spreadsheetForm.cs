@@ -21,11 +21,16 @@ namespace SpreadsheetGUI
     /// </summary>
     public partial class spreadsheetForm : Form
     {
+
+        delegate void SetTextCallback(string text);
+
+        
+        private bool waitingForConnected;
         private string userName = "sysadmin";
         private string spreadsheetName = "any";
         private string IPAddress = "";
-        private string hostName = "lab1-19.eng.utah.edu";
-        private string port = "2116";
+        private string hostName = "striker";
+        private string port = "2115";
         /// <summary>
         /// The underlying spreadsheet data.
         /// </summary>
@@ -62,7 +67,7 @@ namespace SpreadsheetGUI
 
             spreadsheetPanel1.SelectionChanged += displaySelection;
             spreadsheetPanel1.SetSelection(0, 0);
-            parser = new CommandProcessor(ConnectionSuccess, CellChange, Error, InvalidCommand);
+            parser = new CommandProcessor(ConnectionSuccess, CellChange, Error, InvalidCommand, CrashFunction);
         }
 
         /// <summary>
@@ -106,17 +111,25 @@ namespace SpreadsheetGUI
         /// <param name="cell">name of selected cell</param>
         private void setFormContents(string cell)
         {
-            if (baseSpreadsheet.GetCellContents(cell) is Formula)
-                cellContentsField.Text = "=" + baseSpreadsheet.GetCellContents(cell).ToString();
-            else
-                cellContentsField.Text = baseSpreadsheet.GetCellContents(cell).ToString();
 
-            if (baseSpreadsheet.GetCellValue(cell) is FormulaError)
-                cellValueField.Text = "Invalid Formula";
-            else
-                cellValueField.Text = "Cell Value: " + baseSpreadsheet.GetCellValue(cell).ToString();
+            if (toolStrip1.InvokeRequired)
+            {
+                SetTextCallback d = new SetTextCallback(setFormContents);
+                toolStrip1.Invoke(d, new object[] { cell });
+            }
+            else{
+                if (baseSpreadsheet.GetCellContents(cell) is Formula)
+                    cellContentsField.Text = "=" + baseSpreadsheet.GetCellContents(cell).ToString();
+                else
+                    cellContentsField.Text = baseSpreadsheet.GetCellContents(cell).ToString();
 
-            cellNameField.Text = "Cell Selected: " + cell;
+                if (baseSpreadsheet.GetCellValue(cell) is FormulaError)
+                    cellValueField.Text = "Invalid Formula";
+                else
+                    cellValueField.Text = "Cell Value: " + baseSpreadsheet.GetCellValue(cell).ToString();
+
+                cellNameField.Text = "Cell Selected: " + cell;
+            }
         }
 
 
@@ -260,7 +273,7 @@ namespace SpreadsheetGUI
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
-            SpreadsheetApplicationContext.getAppContext().RunForm(new ConnectionDialog.ConnectionForm(userName,spreadsheetName,IPAddress,hostName,port,AttemptConnection));
+            SpreadsheetApplicationContext.getAppContext().RunForm(new ConnectionForm(userName,spreadsheetName,IPAddress,hostName,port,AttemptConnection));
             /*
             // establish if the user wants to open file in case of potential data loss.
             Boolean check = !baseSpreadsheet.Changed;
@@ -472,7 +485,9 @@ namespace SpreadsheetGUI
             int portNum;
 
             if (socket != null)
-                socket.Close();
+            {
+                socket = null;
+            }
 
             if(!Int32.TryParse(port,out portNum))
             {
@@ -483,11 +498,12 @@ namespace SpreadsheetGUI
             try
             {
                 socket = new SocketHandler(hostName, IPAddress, portNum, parser);
+                waitingForConnected = true;
                 sendConnect("connect " + userName + " " + spreadsheetName);
             }
             catch (Exception e)
             {
-                MessageBox.Show("Connection Failed");
+                MessageBox.Show("Connection Failed \n" + e.Message);
             }
         }
 
@@ -511,7 +527,16 @@ namespace SpreadsheetGUI
                 case 1: MessageBox.Show("Bad cell change:\n" + errorMessage); break;
                 case 2: MessageBox.Show("Invalid Command:\n" + errorMessage); break;
                 case 3: MessageBox.Show("Unable to perform command in current state:\n" + errorMessage); break;
-                case 4: MessageBox.Show("Invalid username:\n" + errorMessage); break;
+                case 4: 
+                    MessageBox.Show("Invalid username:\n" + errorMessage);
+                    if (waitingForConnected == true)
+                    {
+                        MessageBox.Show("Invalid username, connection failed:\n" + errorMessage);
+                        CloseSocket();
+                    }
+                    else
+                        MessageBox.Show("Invalid username:\n" + errorMessage); 
+                break;
             }
             
         }
@@ -554,7 +579,17 @@ namespace SpreadsheetGUI
 
 
 
+        private void CrashFunction()
+        {
+            MessageBox.Show("Socket closed unexpectedly");
+            CloseSocket();
+        }
 
+        private void CloseSocket()
+        {
+            socket.Close();
+            connected = false;
+        }
 
 
     }
