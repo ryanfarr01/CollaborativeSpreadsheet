@@ -68,6 +68,7 @@ namespace SpreadsheetGUI
             spreadsheetPanel1.SelectionChanged += displaySelection;
             spreadsheetPanel1.SetSelection(0, 0);
             parser = new CommandProcessor(ConnectionSuccess, CellChange, Error, InvalidCommand, CrashFunction);
+            SpreadsheetApplicationContext.getAppContext().RunForm(new ConnectionForm(userName, spreadsheetName, IPAddress, hostName, port, AttemptConnection));
         }
 
         /// <summary>
@@ -86,6 +87,7 @@ namespace SpreadsheetGUI
             spreadsheetPanel1.SelectionChanged += displaySelection;
             spreadsheetPanel1.SetSelection(0, 0);
             parser = new CommandProcessor(ConnectionSuccess, CellChange, Error, InvalidCommand, CrashFunction);
+            SpreadsheetApplicationContext.getAppContext().RunForm(new ConnectionForm(userName, spreadsheetName, IPAddress, hostName, port, AttemptConnection));
         }
 
 
@@ -272,7 +274,6 @@ namespace SpreadsheetGUI
         /// <param name="e"></param>
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
             SpreadsheetApplicationContext.getAppContext().RunForm(new ConnectionForm(userName,spreadsheetName,IPAddress,hostName,port,AttemptConnection));
             /*
             // establish if the user wants to open file in case of potential data loss.
