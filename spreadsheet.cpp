@@ -1,8 +1,12 @@
+/* 
+ * Authors: Riley Anderson, Brent Bagley, Ryan Farr, Nathan Rollins
+ * Last Modified: 04/24/2015
+ * Version 1.0
+ */
 
 #include "spreadsheet.h"
 
-/*
- * Constructor
+/* Constructor
  *
  * Parameter: name of spreadsheet
  * Simply sets the name and clears all data in the map storage
@@ -19,6 +23,12 @@ spreadsheet::spreadsheet(std::string name)
   changes = new std::stack<cellChange>();
 }
 
+/* Function: spreadsheet destructor
+ * Params: none
+ * Return: void
+ *
+ * Description: Destroys all data structures stored on heap
+ */
 spreadsheet::~spreadsheet()
 {
   delete data;
@@ -26,8 +36,7 @@ spreadsheet::~spreadsheet()
   delete changes;
 }
 
-/*
- * Function: get_name
+/* Function: get_name
  *
  * Parameter: none
  * Returns name of the spreadsheet
@@ -37,8 +46,7 @@ std::string spreadsheet::get_name()
   return this->name;
 }
 
-/*
- * Function: get_data_map
+/* Function: get_data_map
  *
  * Parameter: none
  * Returns map of spreadsheet data
@@ -48,8 +56,7 @@ std::map<std::string, std::string>* spreadsheet::get_data_map()
   return this->data;
 }
 
-/*
- * Function: get_cell
+/* Function: get_cell
  *
  * Parameter: name of cell whose contents you want returned
  * Returns the cell contents if they exist. Otherwise the empty string is returend
@@ -64,8 +71,7 @@ std::string spreadsheet::get_cell(std::string cellName)
   return "";
 }
 
-/*
- * Function: has_circular_dependency
+/* Function: has_circular_dependency
  * Parameters: check if c1 depends on c2
  * 
  * Return: 1 if there exists a dependency, 0 otherwise
@@ -84,8 +90,7 @@ int spreadsheet::has_dependency(std::string c1, std::string c2)
   return 0;
 }
 
-/*
- * Function: set_cell
+/* Function: set_cell
  *
  * parameters: the name of the cell and the contents you want associated with it
  * Returns: 0 if there was a circular dependency or 1 otherwise
@@ -124,13 +129,6 @@ int spreadsheet::set_cell(std::string cellName, std::string cellContents)
 	
       temp_depends.push_back(t);
     }
-    
-    //Testing /!\ *************************************
-    //std::cout << "setting cell:" << cellName << " to:" << cellContents << std::endl;
-    //std::cout << "With dependencies: " << std::endl;
-    //for(std::vector<std::string>::iterator itt = temp_depends.begin(); itt != temp_depends.end(); itt++)
-    //  std::cout << *itt << std::endl;
-    //End testing /!\ *********************************
 
     for(std::vector<std::string>::iterator itt = temp_depends.begin(); itt != temp_depends.end(); itt++)
     {
@@ -184,11 +182,24 @@ int spreadsheet::undo( std::string * cell_name, std::string * cell_change )
   return 0;
 }
 
+/* Function: num_cells
+ * Params: none
+ * Return: number of stored cells
+ *
+ * Description: Returns number of stored cells
+ */
 int spreadsheet::num_cells()
 {
   return (*data).size();
 }
 
+/* Function: display_contents
+ * Params: none
+ * Return: void
+ *
+ * Description: Displays all cells and cell contents of spreadsheet
+ * NOTE: used only for testing
+ */
 void spreadsheet::display_contents()
 {
   for(std::map<std::string, std::string>::const_iterator it = (*data).begin(); it != (*data).end(); it++)
@@ -197,6 +208,12 @@ void spreadsheet::display_contents()
   }
 }
 
+/* Function: cellChange constructor
+ * Params: cell name and contents
+ * Return: void
+ *
+ * Description: constructor for cellChange class, stores name and contents passed in
+ */
 spreadsheet::cellChange::cellChange(std::string name, std::string change)
 {
   this->cell_name = name;

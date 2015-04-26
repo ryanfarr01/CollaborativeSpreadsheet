@@ -1,7 +1,7 @@
 /*
  * Filename: spreadsheet_server.cpp
  * Authors: Riley Anderson, Brent Bagley, Ryan Farr, Nathan Rollins
- * Last modified: 04/06/2015
+ * Last modified: 04/26/2015
  * Version 1.0
  */
 
@@ -87,6 +87,13 @@ void send_error(int socket_id, int error_id, std::string context);
 //Remove a user from previous spreadsheets
 void remove_user(int socket_id);
 
+
+/* Function: send_connect
+ * Params: user ID, number of cells to send
+ * Return: void
+ *
+ * Description: Sends specified client the "connected" command
+ */
 void send_connect(const int socket_id, const int count)
 {
     std::string message = "connected ";
@@ -97,13 +104,23 @@ void send_connect(const int socket_id, const int count)
     send_message(socket_id, message);
 }
 
-//Send cell
+/* Function: send_cell
+ * Params: user ID, name of cell, new contents
+ * Return: void
+ *
+ * Description: Sends specified client the "cell" command, indicating they need to update a cell
+ */
 void send_cell(const int socket_id, const std::string cellName, const std::string cellContents)
 {
     send_message(socket_id, std::string("cell " + cellName + " " + cellContents + '\n'));
 }
 
-//Send error
+/* Function: send_error
+ * Params: client ID, error identifier, explanation
+ * Return: void
+ *
+ * Description: Sends specified client the "error" command, letting them know they did something wrong
+ */
 void send_error(int socket_id, int error_id, std::string context)
 {
     std::ostringstream stream;
@@ -111,7 +128,12 @@ void send_error(int socket_id, int error_id, std::string context)
     send_message(socket_id, std::string("error " + stream.str() + " " + context + '\n'));
 }
 
-//Take in a socket ID and put the spreadsheet pointer associated. Returns 0 if it didn't work, 1 if it did
+/* Function: user_to_spreadsheet
+ * Params: user ID, pointer to a pointer of a spreadsheet
+ * Return: 0 if failed, 1 if succeeded
+ *
+ * Description: Finds the spreadsheet associated with the user and changes pointer to point to it
+ */
 int user_to_spreadsheet(int user, spreadsheet **s)
 {
     if(user_spreadsheet.count(user) != 0)
@@ -127,7 +149,14 @@ int user_to_spreadsheet(int user, spreadsheet **s)
     return 0;
 }
 
-// Processes a username registration request.
+
+/* Function: register_user
+ * Params: user ID, new name
+ * Return: void
+ *
+ * Description: Registers a new user if the name hasn't already been registered
+ *              and the current user is registered. Sends error 4 otherwise.
+ */
 void register_user(int user_socket_ID, std::string user_name)
 {
   if(user_spreadsheet.count(user_socket_ID) > 0)
@@ -155,7 +184,13 @@ void register_user(int user_socket_ID, std::string user_name)
   }
 }// End register_user()
 
-//Remove users who were previously connected
+/* Function: remove_user
+ * Params: user ID
+ * Return: void
+ *
+ * Description: Gets rid of a user from all data structures. This is primarily
+ *              for users switching spreadsheets
+ */
 void remove_user(int socket_id)
 {
   if(user_spreadsheet.count(socket_id) > 0)
@@ -169,7 +204,13 @@ void remove_user(int socket_id)
   }
 }
 
-// Handles a client's connection/spreadsheet loading request.
+/* Function: connect_requested
+ * Params: user ID, username identifier, name of spreadsheet
+ * Return: void
+ *
+ * Description: Called when a client tries to connect to a spreadsheet. If all information 
+ *              works out, they will be sent the "connected" command. Otherwise they'll get error(s)
+ */
 void connect_requested(int user_socket_ID, std::string user_name, std::string spreadsheet_requested)
 {
     // If the username has been registered...
@@ -232,8 +273,12 @@ void connect_requested(int user_socket_ID, std::string user_name, std::string sp
         send_error(user_socket_ID, 4, user_name);
 }//End connect_requested()
 
-
-//Save all of the spreadsheet names to a file. Read on server launch
+/* Function: save_spreadsheet_names
+ * Params: name of spreadsheet to be saved
+ * Return: void
+ *
+ * Description: Saves the name of a new spreadsheet into the spreadsheets.axis list
+ */
 void save_spreadsheet_names(std::string spreadsheet_name)
 {
     std::ofstream ss_names;
@@ -242,7 +287,12 @@ void save_spreadsheet_names(std::string spreadsheet_name)
     ss_names.close();
 }
 
-//Save all spreadsheets contents on server. Read on server launch
+/* Function: save_open_spreadsheets
+ * Params: name of spreadsheet to be saved
+ * Return: void
+ *
+ * Description: Saves the contents of specified spreadsheet
+ */
 void save_open_spreadsheets(std::string spreadsheet_name)
 {
     //Create the file name
@@ -262,7 +312,13 @@ void save_open_spreadsheets(std::string spreadsheet_name)
     ss.close();
 }
 
-//Change the requested cell
+/* Function: change_cell
+ * Params: user ID, cell name, new cell contents
+ * Return: void
+ *
+ * Description: Checks for circular dependencies (returns error if there are any), then
+ *              internally changes spreadsheets and sends off cell change to associated clients
+ */
 void change_cell(int user_socket_id, std::string cell_name, std::string new_cell_contents)
 {
     std::cout << "in change_cell() with cell name: " << cell_name << ", and contents: " << new_cell_contents << std::endl;
@@ -293,6 +349,12 @@ void change_cell(int user_socket_id, std::string cell_name, std::string new_cell
     }
 }
 
+/* Function: undo
+ * Params: user ID
+ * Return: void
+ *
+ * Description: Called when a client wants to undo last action in spreadsheet 
+ */
 void undo(int socket_id)
 {
     //Find the spreadsheet
@@ -321,7 +383,13 @@ void undo(int socket_id)
     }
 }
 
-// Used to send a string through a socket.
+/* Function: send_message
+ * Params: user ID, message to be sent
+ * Return: 1 if succeeded, 0 otherwise
+ *
+ * Description: Sends the specified client the specified message.
+ *              Terminate message with \n
+ */
 int send_message(int socket_id, std::string string_to_send)
 {
     // If socket_id is 0, we don't want to send the message.
@@ -345,9 +413,13 @@ int send_message(int socket_id, std::string string_to_send)
     
 } // end send_message()
 
-
-// Called when an entire "\n"-terminated command is received.
-//   Parameter will still contain the newline character. (Easily changeable if that bothers anyone)
+/* Function: messaeg_received
+ * Params: user ID, message received
+ * Return: void
+ *
+ * Description: Splits up the message received and determines what functions
+ *              to call accordingly
+ */
 void message_received(int socket_id, std::string & line_received)
 {
     // THIS IS PLACEHOLDER CODE. TO BE REPLACED.
@@ -434,12 +506,14 @@ void message_received(int socket_id, std::string & line_received)
     }
 }// End message_received()
 
-
-/*
- * http://stackoverflow.com/questions/5888022/split-string-by-single-spaces
+/* Function: split_message
+ * Params: message to split, vector to store results
+ * Return: void
+ * Source: http://stackoverflow.com/questions/5888022/split-string-by-single-spaces
  *
+ * Description: Splits up a message by spaces. Helper function to help determine how to
+ *              respond to an incoming message
  */
-// Splits a string message into its space-separated components.
 void split_message(std::string message, std::vector<std::string> & ret)
 {   
     // Strip any carriage returns off of our message.
@@ -479,9 +553,12 @@ void client_disconnected(int socket_id)
     close(socket_id);
 }// End client_disconnected()
 
-
-// Handler (event) fired for each new socket.
-// Invoked in a new thread as soon as the socket is paired.
+/* Function: handle
+ * Params: socket
+ * Return: handle pointer
+ *
+ * Description: Fired when a new socket connects. Invoked in a new thread as soon as socket is paired
+ */
 void *handle(void *pnewsock)
 {
     int newsock = *(int*)pnewsock; // Cast to string identifier of the socket
@@ -547,9 +624,13 @@ void *handle(void *pnewsock)
     return NULL;
 } // End handle()
 
-
-// Main function.  Creates a server which pairs sockets to connecting clients, and
-//   launches a callback handle in a new thread for each.
+/* Function: main
+ * Params: number of arguments, string arguments
+ * Return: int
+ *
+ * Description: Starts up the server. Pulls in all saved spreadsheets and users, then waits
+ *              for connecting clients.
+ */
 int main(int argc, char* argv[])
 {
     // Holds the port number we're going to host on.   Default to port 2000 as per protocol specification.

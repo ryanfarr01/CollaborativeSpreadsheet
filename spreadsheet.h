@@ -1,4 +1,9 @@
 
+/* 
+ * Authors: Riley Anderson, Brent Bagley, Ryan Farr, Nathan Rollins
+ * Last Modified: 04/24/2015
+ * Version 1.0
+ */
 
 #ifndef SPREADSHEET_H
 #define SPREADSHEET_H
@@ -10,8 +15,36 @@
 #include <stack>
 #include <iostream>
 
+/* Class: spreadsheet
+ *
+ * Description: Aggregate DS which stores the names and values of
+ *              cells in a spreadsheet. Helper class for spreadsheet_server.
+ *              Stores all dependencies to determine circular dependencies.
+ *
+ * Public Functions:
+ *   constructor:       sets name of spreadsheet
+ *   destructor:        deletes all stored data from spreadsheet
+ *   get_name:          rerurns name of spreadsheet
+ *   get_cell:          returns contents of specified cell
+ *   set_cell:          sets contents of specified cell
+ *   get_data_map:      returns the data map to store spreadsheet
+ *   undo:              undoes last cell change
+ *   display_contents:  display current spreadsheet -- only for testing
+ *   num_cells:         returns the number of stored cells currently 
+ *
+ * Private Functions:
+ *   has_dependency:    tells if circular dependencies exist
+ */
 class spreadsheet
 {
+  /* Class: cellChange
+   *
+   * Description: Aggregate to store the name and contents of a cell
+   *              that has been changed. Stored on a stack for 'undo'
+   *
+   * Public Functions:
+   *   constructor: sets the name and contents to be stored
+   */
   class cellChange
   {
   public:

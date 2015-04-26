@@ -68,7 +68,10 @@ namespace SpreadsheetGUI
             spreadsheetPanel1.SelectionChanged += displaySelection;
             spreadsheetPanel1.SetSelection(0, 0);
             parser = new CommandProcessor(ConnectionSuccess, CellChange, Error, InvalidCommand, CrashFunction);
-            SpreadsheetApplicationContext.getAppContext().RunForm(new ConnectionForm(userName, spreadsheetName, IPAddress, hostName, port, AttemptConnection));
+
+            ConnectionForm f = new ConnectionForm(userName, spreadsheetName, IPAddress, hostName, port, AttemptConnection);
+            SpreadsheetApplicationContext.getAppContext().RunForm(f);
+            f.BringToFront();
         }
 
         /// <summary>
@@ -87,7 +90,10 @@ namespace SpreadsheetGUI
             spreadsheetPanel1.SelectionChanged += displaySelection;
             spreadsheetPanel1.SetSelection(0, 0);
             parser = new CommandProcessor(ConnectionSuccess, CellChange, Error, InvalidCommand, CrashFunction);
-            SpreadsheetApplicationContext.getAppContext().RunForm(new ConnectionForm(userName, spreadsheetName, IPAddress, hostName, port, AttemptConnection));
+
+            ConnectionForm f = new ConnectionForm(userName, spreadsheetName, IPAddress, hostName, port, AttemptConnection);
+            SpreadsheetApplicationContext.getAppContext().RunForm(f);
+            f.BringToFront();
         }
 
 
