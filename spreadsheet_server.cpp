@@ -631,7 +631,7 @@ void *handle(void *pnewsock)
 int main(int argc, char* argv[])
 {
     // Holds the port number we're going to host on.   Default to port 2000 as per protocol specification.
-    std::string port = "2117";
+    std::string port = "2000";
     
     // If we have exactly one argument, make it our host port.
     if (argc == 2){
