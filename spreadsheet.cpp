@@ -97,7 +97,6 @@ int spreadsheet::has_dependency(std::string c1, std::string c2)
  */
 int spreadsheet::set_cell(std::string cellName, std::string cellContents)
 {
-  std::cout << "In " << name << "'s set_cell with cell: " << cellName << ", and contents: " << cellContents << std::endl;
 
   std::string originalContents = cellContents;
   cellName[0] = toupper(cellName[0]);
@@ -204,7 +203,7 @@ void spreadsheet::display_contents()
 {
   for(std::map<std::string, std::string>::const_iterator it = (*data).begin(); it != (*data).end(); it++)
   {
-    std::cout << "Cell: " << it->first << " Contents: " << it->second << std::endl;
+    //std::cout << "Cell: " << it->first << " Contents: " << it->second << std::endl;
   }
 }
 

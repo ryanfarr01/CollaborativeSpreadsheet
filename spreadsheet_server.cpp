@@ -255,7 +255,6 @@ void connect_requested(int user_socket_ID, std::string user_name, std::string sp
         //Otherwise, create the spreadsheet
         else
         {
-            std::cout << "Making a new spreadsheet: " << spreadsheet_requested << std::endl;
             
             spreadsheet * s = new spreadsheet(spreadsheet_requested);
 	    send_connect(user_socket_ID, s->num_cells());
@@ -321,7 +320,6 @@ void save_open_spreadsheets(std::string spreadsheet_name)
  */
 void change_cell(int user_socket_id, std::string cell_name, std::string new_cell_contents)
 {
-    std::cout << "in change_cell() with cell name: " << cell_name << ", and contents: " << new_cell_contents << std::endl;
     std::map<int,std::string>::iterator it;
 
     spreadsheet *s;
@@ -404,7 +402,6 @@ int send_message(int socket_id, std::string string_to_send)
     
     // Return a nonzero value if we didn't send the whole message.
     if (bytes_sent != length){
-        perror("send_message failed"); // Error if sending failed.
         return 1;
     }
     
